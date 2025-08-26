@@ -1,0 +1,24 @@
+<div class="turnos-container">
+  <h2>Turnos</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Fecha</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let turno of turnos">
+        <td>{{ turno.id }}</td>
+        <td>{{ turno.nombre }}</td>
+        <td>{{ turno.fecha | date }}</td>
+        <td>
+          <button (click)="editarTurno(turno)">Editar</button>
+          <button (click)="eliminarTurno(turno.id)">Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
