@@ -1,6 +1,6 @@
 <div class="turnos-container container-fluid mt-4">
   <h2>Turnos</h2>
-    <button class="btn btn-primary mb-3 float-end" (click)="agregarTurno()">Agregar Turno</button>
+    <button class="btn btn-primary mb-3 float-end" (click)="openModal()">Agregar Turno</button>
   <table class="table table-bordered">
     <thead>
       <tr>
@@ -22,8 +22,8 @@
         <td>{{ turno.fechaInicio | date: 'HH:mm'}}</td>
         <td>{{ turno.fechaFin | date:'HH:mm'}}</td>
         <td class="gap-2 d-flex justify-content-center">
-          <button class="btn btn-warning" (click)="editarTurno(turno)">Editar</button>
-          <button class="btn btn-danger" (click)="eliminarTurno(turno.id)">Eliminar</button>
+          <button class="btn btn-warning" (click)="openModal(turno)">Editar</button>
+          <button class="btn btn-danger" (click)="eliminarTurno(turno)">Eliminar</button>
         </td>
       </tr>
     </tbody>

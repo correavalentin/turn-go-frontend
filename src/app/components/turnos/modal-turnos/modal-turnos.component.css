@@ -1,0 +1,10 @@
+/* Contenedor principal del modal */
+:host-context(cdk-dialog-container) {
+  display: block;
+  border-radius: 0.5rem;
+  background-color: white;
+  filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.25));
+  min-width: 600px;
+  max-width: 90vw;
+  width: 100%;
+}

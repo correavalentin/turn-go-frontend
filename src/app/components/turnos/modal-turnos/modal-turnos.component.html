@@ -1,0 +1,121 @@
+<div class="modal-dialog modal-xl" role="document">
+  <div class="modal-content p-5">
+    <!-- Header del Modal -->
+    <div class="modal-header mb-3">
+      <h2 class="modal-title">
+        {{ data ? 'Editar Turno' : 'Nuevo Turno' }}
+      </h2>
+      <button 
+        type="button" 
+        class="btn-close" 
+        aria-label="Close"
+        (click)="closeModal()">
+      </button>
+    </div>
+
+    <!-- Body del Modal -->
+    <div class="modal-body">
+      <form [formGroup]="turnosModal" (ngSubmit)="guardar()">
+        
+        <!-- ID (campo oculto) -->
+        <input type="hidden" formControlName="id">
+
+        <!-- Cancha -->
+        <div class="mb-3">
+          <label for="cancha" class="form-label">Cancha *</label>
+          <select 
+            class="form-select" 
+            id="cancha" 
+            formControlName="cancha"
+            [class.is-invalid]="turnosModal.get('cancha')?.invalid && turnosModal.get('cancha')?.touched">
+			<option *ngFor="let cancha of canchas" [ngValue]="cancha">{{ cancha.numero }}</option>
+          </select>
+          <div class="invalid-feedback" *ngIf="turnosModal.get('cancha')?.invalid && turnosModal.get('cancha')?.touched">
+            La cancha es requerida
+          </div>
+        </div>
+
+        <!-- Cliente
+        <div class="mb-3">
+          <label class="form-label">Cliente</label>
+          <div class="row">
+            <div class="col-md-4">
+              <input 
+                type="text" 
+                class="form-control" 
+                placeholder="Nombre"
+                [value]="turnosModal.get('cliente')?.value?.nombre || ''"
+                (input)="updateClienteField('nombre', $event)"
+                [class.is-invalid]="turnosModal.get('cliente')?.invalid && turnosModal.get('cliente')?.touched">
+            </div>
+            <div class="col-md-4">
+              <input 
+                type="text" 
+                class="form-control" 
+                placeholder="Apellido"
+                [value]="turnosModal.get('cliente')?.value?.apellido || ''"
+                (input)="updateClienteField('apellido', $event)"
+                [class.is-invalid]="turnosModal.get('cliente')?.invalid && turnosModal.get('cliente')?.touched">
+            </div>
+            <div class="col-md-4">
+              <input 
+                type="email" 
+                class="form-control" 
+                placeholder="Correo"
+                [value]="turnosModal.get('cliente')?.value?.correo || ''"
+                (input)="updateClienteField('correo', $event)"
+                [class.is-invalid]="turnosModal.get('cliente')?.invalid && turnosModal.get('cliente')?.touched">
+            </div>
+          </div>
+        </div>
+	-->
+
+        <!-- Fecha y Hora de Inicio -->
+        <div class="mb-3">
+          <label for="fechaInicio" class="form-label">Fecha y Hora de Inicio *</label>
+          <input 
+            type="datetime-local" 
+            class="form-control" 
+            id="fechaInicio" 
+            formControlName="fechaInicio"
+            [class.is-invalid]="turnosModal.get('fechaInicio')?.invalid && turnosModal.get('fechaInicio')?.touched">
+          <div class="invalid-feedback" *ngIf="turnosModal.get('fechaInicio')?.invalid && turnosModal.get('fechaInicio')?.touched">
+            La fecha de inicio es requerida
+          </div>
+        </div>
+
+        <!-- Fecha y Hora de Fin -->
+        <div class="mb-3">
+          <label for="fechaFin" class="form-label">Fecha y Hora de Fin *</label>
+          <input 
+            type="datetime-local" 
+            class="form-control" 
+            id="fechaFin" 
+            formControlName="fechaFin"
+            [class.is-invalid]="turnosModal.get('fechaFin')?.invalid && turnosModal.get('fechaFin')?.touched">
+          <div class="invalid-feedback" *ngIf="turnosModal.get('fechaFin')?.invalid && turnosModal.get('fechaFin')?.touched">
+            La fecha de fin es requerida
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Footer del Modal -->
+    <div class="modal-footer gap-2">
+      <button 
+        type="button" 
+        class="btn btn-secondary" 
+        (click)="closeModal()">
+        Cancelar
+      </button>
+      <button 
+        type="button" 
+        class="btn btn-primary" 
+        (click)="guardar()"
+        [disabled]="turnosModal.invalid">
+        {{ data ? 'Actualizar' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+</div>
