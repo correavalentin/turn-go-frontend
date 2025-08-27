@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Turno } from './turno.model';
-import { TurnoService } from '../services/turno.service';
+import { TurnoService } from '../../services/turno.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -26,6 +26,7 @@ export class TurnosComponent implements OnInit {
   }
 
   editarTurno(turno: Turno) {
+    // Lógica para editar
   }
 
   eliminarTurno(id: number) {
