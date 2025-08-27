@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Turno } from '../turno.model';
+import { Turno } from './turno.model';
 
 @Component({
   selector: 'app-turnos',
