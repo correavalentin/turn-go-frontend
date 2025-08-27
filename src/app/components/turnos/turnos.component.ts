@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Turno } from './turno.model';
-import { TurnoService } from '../../services/cliente.service';
+import { TurnoService } from '../services/turno.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
