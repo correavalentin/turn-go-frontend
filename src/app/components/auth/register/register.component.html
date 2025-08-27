@@ -1,0 +1,57 @@
+<div class="register-container">
+  <div class="register-content">
+    <!-- Formulario de Registro (lado izquierdo) -->
+    <div class="register-form-container">
+      <div class="register-card">
+        <h2 class="register-title">Register</h2>
+        
+        <form class="register-form" (ngSubmit)="onSubmit()">
+          <div class="name-fields">
+            <div class="form-group">
+              <label for="firstName" class="form-label">First name</label>
+              <input type="text" id="firstName" class="form-control" [(ngModel)]="firstName" name="firstName">
+            </div>
+            
+            <div class="form-group">
+              <label for="lastName" class="form-label">Last name</label>
+              <input type="text" id="lastName" class="form-control" [(ngModel)]="lastName" name="lastName">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" id="email" class="form-control" [(ngModel)]="email" name="email">
+          </div>
+          
+          <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" id="password" class="form-control" [(ngModel)]="password" name="password">
+          </div>
+          
+          <div class="form-group">
+            <label for="confirmPassword" class="form-label">Confirm password</label>
+            <input type="password" id="confirmPassword" class="form-control" [(ngModel)]="confirmPassword" name="confirmPassword">
+          </div>
+          
+          <div class="form-buttons">
+            <button type="button" class="btn btn-secondary" (click)="goToLogin()">
+              I have an account
+            </button>
+            <button type="submit" class="btn btn-primary">
+              Register
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Logo y marca (lado derecho) -->
+    <div class="brand-container">
+      <div class="brand-content">
+        <div class="logo-image">
+          <img src="assets/images/turgoLogo.png" alt="TurnGo Logo" class="brand-logo">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

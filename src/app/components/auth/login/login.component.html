@@ -1,0 +1,40 @@
+<div class="login-container">
+  <div class="login-content">
+    <!-- Formulario de Login (lado izquierdo) -->
+    <div class="login-form-container">
+      <div class="login-card">
+        <h2 class="login-title">Login</h2>
+        
+        <form class="login-form" (ngSubmit)="onSubmit()">
+          <div class="form-group">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" id="email" class="form-control" [(ngModel)]="email" name="email">
+          </div>
+          
+          <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" id="password" class="form-control" [(ngModel)]="password" name="password">
+          </div>
+          
+          <div class="form-buttons">
+            <button type="button" class="btn btn-secondary" (click)="goToRegister()">
+              I don't have an account
+            </button>
+            <button type="submit" class="btn btn-primary">
+              Login
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Logo y marca (lado derecho) -->
+    <div class="brand-container">
+      <div class="brand-content">
+        <div class="logo-image">
+          <img src="assets/images/turgoLogo.png" alt="TurnGo Logo" class="brand-logo">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
