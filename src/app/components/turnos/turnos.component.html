@@ -1,6 +1,6 @@
 <div class="turnos-container container-fluid mt-4">
   <h2>Turnos</h2>
-    <button class="btn btn-primary mb-3 float-end" (click)="openModal()">Agregar Turno</button>
+  <button class="btn btn-primary mb-3 float-end" (click)="openModal()">Agregar Turno</button>
   <table class="table table-bordered">
     <thead>
       <tr>
@@ -14,18 +14,20 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let turno of turnos">
-        <td>{{ turno.id }}</td>
-        <td>{{ turno.fechaInicio | date:'dd/MM/yyyy'}}</td>
-        <td>{{ turno.cancha.numero }}</td>
-        <td>{{ turno.cliente.nombre }} {{ turno.cliente.apellido }} ({{ turno.cliente.correo }})</td>
-        <td>{{ turno.fechaInicio | date: 'HH:mm'}}</td>
-        <td>{{ turno.fechaFin | date:'HH:mm'}}</td>
-        <td class="gap-2 d-flex justify-content-center">
-          <button class="btn btn-warning" (click)="openModal(turno)">Editar</button>
-          <button class="btn btn-danger" (click)="eliminarTurno(turno)">Eliminar</button>
-        </td>
-      </tr>
+      @for (turno of turnos; track turno) {
+        <tr>
+          <td>{{ turno.id }}</td>
+          <td>{{ turno.fechaInicio | date:'dd/MM/yyyy'}}</td>
+          <td>{{ turno.cancha.numero }}</td>
+          <td>{{ turno.cliente.nombre }} {{ turno.cliente.apellido }} ({{ turno.cliente.correo }})</td>
+          <td>{{ turno.fechaInicio | date: 'HH:mm'}}</td>
+          <td>{{ turno.fechaFin | date:'HH:mm'}}</td>
+          <td class="gap-2 d-flex justify-content-center">
+            <button class="btn btn-warning" (click)="openModal(turno)">Editar</button>
+            <button class="btn btn-danger" (click)="eliminarTurno(turno)">Eliminar</button>
+          </td>
+        </tr>
+      }
     </tbody>
   </table>
 </div>

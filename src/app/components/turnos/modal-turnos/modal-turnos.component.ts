@@ -3,12 +3,12 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Turno } from '../turno.model';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TurnoForm } from './turno-form.interface';
-import { CommonModule } from '@angular/common';
+
 import { canchas } from '../../canchas/canchas.mock';
 
 @Component({
   selector: 'app-modal-turnos',
-  imports: [ReactiveFormsModule, FormsModule, CommonModule],
+  imports: [ReactiveFormsModule, FormsModule],
   templateUrl: './modal-turnos.component.html',
   styleUrl: './modal-turnos.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
