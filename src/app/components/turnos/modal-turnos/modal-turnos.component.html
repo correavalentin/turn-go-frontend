@@ -14,7 +14,7 @@
     </div>
 
     <!-- Body del Modal -->
-    <div class="modal-body">
+    <div class="modal-body mb-3">
       <form [formGroup]="turnosModal" (ngSubmit)="guardar()">
 
         <!-- ID (campo oculto) -->
@@ -75,39 +75,52 @@
         -->
 
         <!-- Fecha y Hora de Inicio -->
-        <div class="mb-3">
-          <label for="fechaInicio" class="form-label">Fecha y Hora de Inicio *</label>
-          <input
-            type="datetime-local"
-            class="form-control"
-            id="fechaInicio"
-            formControlName="fechaInicio"
-            [class.is-invalid]="turnosModal.get('fechaInicio')?.invalid && turnosModal.get('fechaInicio')?.touched">
-          @if (turnosModal.get('fechaInicio')?.invalid && turnosModal.get('fechaInicio')?.touched) {
+        <div class="row g-3">
+			<div class="col-md-6 d-flex flex-column">
+  			<label for="fechaInicio" class="form-label">Fecha y Hora de Inicio</label>
+  
+			<p-date-picker
+				id="fechaInicio"
+				class="max-w-full"
+				formControlName="fechaInicio"
+				inline="true"
+				showWeek="true"
+				[showTime]="true"
+				hourFormat="24"
+				stepMinute="30"
+				[minDate]="minDate"
+			></p-date-picker>
+
+			@if (turnosModal.get('fechaInicio')?.invalid && turnosModal.get('fechaInicio')?.touched) {
             <div class="invalid-feedback">
               La fecha de inicio es requerida
             </div>
           }
-        </div>
+		</div>
 
         <!-- Fecha y Hora de Fin -->
-        <div class="mb-3">
-          <label for="fechaFin" class="form-label">Fecha y Hora de Fin *</label>
-          <input
-            type="datetime-local"
-            class="form-control"
-            id="fechaFin"
-            formControlName="fechaFin"
-            [class.is-invalid]="turnosModal.get('fechaFin')?.invalid && turnosModal.get('fechaFin')?.touched">
+        <div class="col-md-6 d-flex flex-column">
+          <label for="fechaFin" class="form-label">Fecha y Hora de Fin</label>
+          <p-date-picker
+				id="fechaFin"
+				class="max-w-full"
+				formControlName="fechaFin"
+				inline="true"
+				showWeek="true"
+				[showTime]="true"
+				hourFormat="24"
+				stepMinute="30"
+				[minDate]="minDate"
+			></p-date-picker>
           @if (turnosModal.get('fechaFin')?.invalid && turnosModal.get('fechaFin')?.touched) {
             <div class="invalid-feedback">
               La fecha de fin es requerida
             </div>
           }
         </div>
-
+		</div>
       </form>
-    </div>
+	  </div>
 
     <!-- Footer del Modal -->
     <div class="modal-footer gap-2">
