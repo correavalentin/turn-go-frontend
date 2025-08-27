@@ -12,8 +12,8 @@
     <tbody>
       <tr *ngFor="let turno of turnos">
         <td>{{ turno.id }}</td>
-        <td>{{ turno.nombre }}</td>
-        <td>{{ turno.fecha | date }}</td>
+        <td>{{ turno.fechaInicio | date:'short' }}</td>
+        <td>{{ turno.fechaFin | date:'short' }}</td>
         <td>
           <button (click)="editarTurno(turno)">Editar</button>
           <button (click)="eliminarTurno(turno.id)">Eliminar</button>
