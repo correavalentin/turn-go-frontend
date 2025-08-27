@@ -1,41 +1,37 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { Turno } from './turno.model';
+import { TurnoService } from '../../services/turno.service';
 import { CommonModule } from '@angular/common';
-import { Turno } from '../turno.model';
 
 @Component({
   selector: 'app-turnos',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './turnos.component.html',
-  styleUrl: './turnos.component.css'
+  styleUrls: ['./turnos.component.css']
 })
-export class TurnosComponent {
+export class TurnosComponent implements OnInit {
+  turnos: Turno[] = [];
 
-  turnos: Turno[] = [
-    { 
-      id: 1, 
-      fechaInicio: new Date('2024-01-15T10:00:00'), 
-      fechaFin: new Date('2024-01-15T11:00:00') 
-    },
-    { 
-      id: 2, 
-      fechaInicio: new Date('2024-01-15T14:00:00'), 
-      fechaFin: new Date('2024-01-15T15:00:00') 
-    },
-    { 
-      id: 3, 
-      fechaInicio: new Date('2024-01-15T16:00:00'), 
-      fechaFin: new Date('2024-01-15T17:00:00') 
-    }
-  ];
+  constructor(private turnoService: TurnoService) {}
+
+  ngOnInit() {
+    this.cargarTurnos();
+  }
+
+  cargarTurnos() {
+    this.turnoService.getTurnos().subscribe(data => {
+      this.turnos = data;
+    });
+  }
 
   editarTurno(turno: Turno) {
-    // Lógica para editar el turno
-    console.log('Editando turno:', turno);
+    // Lógica para editar
   }
 
   eliminarTurno(id: number) {
-    // Lógica para eliminar el turno
-    console.log('Eliminando turno con id:', id);
+    this.turnoService.eliminarTurno(id).subscribe(() => {
+      this.turnos = this.turnos.filter(t => t.id !== id);
+    });
   }
 }
