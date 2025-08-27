@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Turno } from '../turno.model';
+import { Turno } from './turno.model';
 
 @Component({
   selector: 'app-turnos',
