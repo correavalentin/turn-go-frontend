@@ -1,4 +1,16 @@
 <div class="turnos-container">
+  <!-- Header con mensaje de bienvenida -->
+  <div class="turnos-header" *ngIf="isAuthenticated">
+    <div class="welcome-message">
+      <h1>¡Bienvenido a TurnGo!</h1>
+      <p>Gestiona tus turnos de manera fácil y eficiente</p>
+    </div>
+    <div class="user-info">
+      <span class="user-email">{{ userEmail }}</span>
+      <button class="btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
+    </div>
+  </div>
+
   <h2>Turnos</h2>
   <table>
     <thead>

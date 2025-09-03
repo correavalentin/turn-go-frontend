@@ -1,0 +1,138 @@
+.turnos-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header de bienvenida */
+.turnos-header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.welcome-message h1 {
+  margin: 0 0 10px 0;
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.welcome-message p {
+  margin: 0;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.user-email {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.btn-logout {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+}
+
+.btn-logout:hover {
+  background-color: #c82333;
+}
+
+/* Tabla de turnos */
+h2 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 2rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+thead {
+  background-color: #f8f9fa;
+}
+
+th, td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #dee2e6;
+}
+
+th {
+  font-weight: 600;
+  color: #495057;
+  background-color: #e9ecef;
+}
+
+tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 5px;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+button:last-child {
+  background-color: #dc3545;
+}
+
+button:last-child:hover {
+  background-color: #c82333;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .turnos-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+  
+  .user-info {
+    align-items: center;
+  }
+  
+  table {
+    font-size: 0.9rem;
+  }
+  
+  th, td {
+    padding: 10px 8px;
+  }
+}

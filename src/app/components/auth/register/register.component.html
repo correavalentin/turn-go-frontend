@@ -5,40 +5,50 @@
       <div class="register-card">
         <h2 class="register-title">Register</h2>
         
+        <!-- Mensajes de estado -->
+        <div *ngIf="errorMessage" class="alert alert-danger">
+          {{ errorMessage }}
+        </div>
+        
+        <div *ngIf="successMessage" class="alert alert-success">
+          {{ successMessage }}
+        </div>
+        
         <form class="register-form" (ngSubmit)="onSubmit()">
           <div class="name-fields">
             <div class="form-group">
               <label for="firstName" class="form-label">First name</label>
-              <input type="text" id="firstName" class="form-control" [(ngModel)]="firstName" name="firstName">
+              <input type="text" id="firstName" class="form-control" [(ngModel)]="firstName" name="firstName" [disabled]="isLoading">
             </div>
             
             <div class="form-group">
               <label for="lastName" class="form-label">Last name</label>
-              <input type="text" id="lastName" class="form-control" [(ngModel)]="lastName" name="lastName">
+              <input type="text" id="lastName" class="form-control" [(ngModel)]="lastName" name="lastName" [disabled]="isLoading">
             </div>
           </div>
           
           <div class="form-group">
             <label for="email" class="form-label">Email</label>
-            <input type="email" id="email" class="form-control" [(ngModel)]="email" name="email">
+            <input type="email" id="email" class="form-control" [(ngModel)]="email" name="email" [disabled]="isLoading">
           </div>
           
           <div class="form-group">
             <label for="password" class="form-label">Password</label>
-            <input type="password" id="password" class="form-control" [(ngModel)]="password" name="password">
+            <input type="password" id="password" class="form-control" [(ngModel)]="password" name="password" [disabled]="isLoading">
           </div>
           
           <div class="form-group">
             <label for="confirmPassword" class="form-label">Confirm password</label>
-            <input type="password" id="confirmPassword" class="form-control" [(ngModel)]="confirmPassword" name="confirmPassword">
+            <input type="password" id="confirmPassword" class="form-control" [(ngModel)]="confirmPassword" name="confirmPassword" [disabled]="isLoading">
           </div>
           
           <div class="form-buttons">
-            <button type="button" class="btn btn-secondary" (click)="goToLogin()">
+            <button type="button" class="btn btn-secondary" (click)="goToLogin()" [disabled]="isLoading">
               I have an account
             </button>
-            <button type="submit" class="btn btn-primary">
-              Register
+            <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+              <span *ngIf="isLoading">Registrando...</span>
+              <span *ngIf="!isLoading">Register</span>
             </button>
           </div>
         </form>
