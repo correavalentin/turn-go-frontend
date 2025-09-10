@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UsuarioService } from '../../../services/usuario.service';
+import { GoogleAuthService } from '../../../services/google-auth.service';
 
 @Component({
   selector: 'app-login',
@@ -21,11 +22,16 @@ export class LoginComponent {
   
   constructor(
     private router: Router,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private googleAuthService: GoogleAuthService
   ) {}
 
   goToRegister(): void {
     this.router.navigate(['/register']);
+  }
+
+  volverATurnos(): void {
+    this.router.navigate(['/turnos']);
   }
 
   onSubmit(): void {
@@ -66,5 +72,14 @@ export class LoginComponent {
           this.isLoading = false;
         }
       });
+  }
+
+  googleSignIn(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.successMessage = 'Redirigiendo a Google...';
+    
+    // Iniciar el flujo de autenticación de Google
+    this.googleAuthService.initiateGoogleAuth();
   }
 }

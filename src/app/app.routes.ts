@@ -6,7 +6,7 @@ import { RegisterComponent } from './components/auth/register/register.component
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/login',
+    redirectTo: '/turnos',
     pathMatch: 'full'
   },
   {

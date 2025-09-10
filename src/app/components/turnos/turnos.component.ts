@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Turno } from './turno.model';
 import { TurnoService } from '../../services/turno.service';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-turnos',
@@ -15,7 +16,10 @@ export class TurnosComponent implements OnInit {
   isAuthenticated: boolean = false;
   userEmail: string = '';
 
-  constructor(private turnoService: TurnoService) {}
+  constructor(
+    private turnoService: TurnoService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.verificarAutenticacion();
@@ -48,12 +52,20 @@ export class TurnosComponent implements OnInit {
     });
   }
 
+  irALogin() {
+    this.router.navigate(['/login']);
+  }
+
+  irARegister() {
+    this.router.navigate(['/register']);
+  }
+
   cerrarSesion() {
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('userEmail');
     this.isAuthenticated = false;
-    // Redirigir al login
-    window.location.href = '/login';
+    this.userEmail = '';
+    // No redirigir, quedarse en /turnos
   }
 }

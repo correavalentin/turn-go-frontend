@@ -10,22 +10,6 @@ export class UsuarioService {
   
   constructor(private http: HttpClient) {}
 
-  getUsuarios(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/users`); // Endpoint que necesitamos crear
-  }
-
-  getUsuarioById(id: number): Observable<any> {
-    return this.http.get(`${this.baseUrl}/users/${id}`); // Endpoint que necesitamos crear
-  }
-
-  crearUsuario(usuario: any): Observable<any> {
-    return this.http.post(`${this.baseUrl}/users`, usuario); // Endpoint que necesitamos crear
-  }
-
-  eliminarUsuario(id: number): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/users/${id}`); // Endpoint que necesitamos crear
-  }
-
   // Métodos específicos para autenticación - ESTOS SÍ EXISTEN
   login(credenciales: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/login`, credenciales);

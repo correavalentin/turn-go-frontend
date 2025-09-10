@@ -31,6 +31,10 @@ export class RegisterComponent {
     this.router.navigate(['/login']);
   }
 
+  volverATurnos(): void {
+    this.router.navigate(['/turnos']);
+  }
+
   onSubmit(): void {
     if (!this.firstName || !this.lastName || !this.email || !this.password || !this.confirmPassword) {
       this.errorMessage = 'Por favor completa todos los campos';

@@ -1,11 +1,19 @@
 <div class="turnos-container">
   <!-- Header con mensaje de bienvenida -->
-  <div class="turnos-header" *ngIf="isAuthenticated">
+  <div class="turnos-header">
     <div class="welcome-message">
-      <h1>¡Bienvenido a TurnGo!</h1>
+      <h1>Welcome to Turgo!</h1>
       <p>Gestiona tus turnos de manera fácil y eficiente</p>
     </div>
-    <div class="user-info">
+    
+    <!-- Botones para usuarios no autenticados -->
+    <div class="auth-buttons" *ngIf="!isAuthenticated">
+      <button class="btn-login" (click)="irALogin()">Sing-in</button>
+      <button class="btn-register" (click)="irARegister()">Sing-up</button>
+    </div>
+    
+    <!-- Información del usuario autenticado -->
+    <div class="user-info" *ngIf="isAuthenticated">
       <span class="user-email">{{ userEmail }}</span>
       <button class="btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
     </div>
