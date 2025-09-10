@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { TurnosComponent } from './components/turnos/turnos.component';
 import { LoginComponent } from './components/auth/login/login.component';
 import { RegisterComponent } from './components/auth/register/register.component';
+import { GoogleCallbackComponent } from './components/auth/google-callback/google-callback.component';
 
 export const routes: Routes = [
   {
@@ -20,5 +21,9 @@ export const routes: Routes = [
   {
     path: 'turnos',
     component: TurnosComponent
+  },
+  {
+    path: 'auth/callback',
+    component: GoogleCallbackComponent
   }
 ];

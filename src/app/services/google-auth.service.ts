@@ -22,16 +22,34 @@ export class GoogleAuthService {
 
   // Procesar la respuesta del callback de Google
   processGoogleCallback(queryParams: any): any {
-    const accessToken = queryParams.get('accessToken');
-    const refreshToken = queryParams.get('refreshToken');
-    const email = queryParams.get('email');
+    console.log('Procesando callback de Google:', queryParams);
+    
+    const accessToken = queryParams['accessToken'];
+    const refreshToken = queryParams['refreshToken'];
+    const email = queryParams['email'];
+    const error = queryParams['error'];
 
-    if (accessToken && refreshToken && email) {
+    // Si hay un error en los parámetros
+    if (error) {
+      console.error('Error en callback de Google:', error);
+      return { 
+        success: false, 
+        error: error,
+        message: 'Error en la autenticación con Google'
+      };
+    }
+
+    // Verificar que tenemos todos los tokens necesarios
+    if (accessToken && email) {
       // Guardar en localStorage
       localStorage.setItem('token', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
       localStorage.setItem('userEmail', email);
       
+      if (refreshToken) {
+        localStorage.setItem('refreshToken', refreshToken);
+      }
+      
+      console.log('✅ Autenticación con Google exitosa');
       return {
         success: true,
         accessToken,
@@ -40,7 +58,12 @@ export class GoogleAuthService {
       };
     }
 
-    return { success: false };
+    console.error('❌ Faltan parámetros en el callback de Google');
+    return { 
+      success: false, 
+      error: 'missing_params',
+      message: 'Faltan parámetros de autenticación'
+    };
   }
 }
 
