@@ -36,7 +36,7 @@ export class LoginComponent {
 
   onSubmit(): void {
     if (!this.email || !this.password) {
-      this.errorMessage = 'Por favor completa todos los campos';
+      this.errorMessage = 'Please complete all fields';
       return;
     }
 
@@ -49,7 +49,7 @@ export class LoginComponent {
       .subscribe({
         next: (response) => {
           console.log('✅ Conexión exitosa:', response);
-          this.successMessage = '¡Login exitoso! Redirigiendo a turnos...';
+          this.successMessage = 'Login successful! Redirecting to home page...';
           this.isLoading = false;
           
           // Guardar el token y email en localStorage
@@ -68,7 +68,16 @@ export class LoginComponent {
         },
         error: (error) => {
           console.error('❌ Error en la conexión:', error);
-          this.errorMessage = `Error de conexión: ${error.status} - ${error.message || 'Error desconocido'}`;
+          
+          // Mostrar mensaje amigable según el tipo de error
+          if (error.status === 401) {
+            this.errorMessage = 'The provided data is not correct';
+          } else if (error.status === 0) {
+            this.errorMessage = 'Connection error. Please check your internet connection';
+          } else {
+            this.errorMessage = `Connection error: ${error.status} - ${error.message || 'Unknown error'}`;
+          }
+          
           this.isLoading = false;
         }
       });
@@ -77,7 +86,7 @@ export class LoginComponent {
   googleSignIn(): void {
     this.isLoading = true;
     this.errorMessage = '';
-    this.successMessage = 'Redirigiendo a Google...';
+    this.successMessage = 'Redirecting to Google...';
     
     // Iniciar el flujo de autenticación de Google
     this.googleAuthService.initiateGoogleAuth();

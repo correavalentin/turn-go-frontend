@@ -37,12 +37,12 @@ export class RegisterComponent {
 
   onSubmit(): void {
     if (!this.firstName || !this.lastName || !this.email || !this.password || !this.confirmPassword) {
-      this.errorMessage = 'Por favor completa todos los campos';
+      this.errorMessage = 'Please complete all fields';
       return;
     }
 
     if (this.password !== this.confirmPassword) {
-      this.errorMessage = 'Las contraseñas no coinciden';
+      this.errorMessage = 'Passwords do not match';
       return;
     }
 
@@ -63,7 +63,7 @@ export class RegisterComponent {
       .subscribe({
         next: (response) => {
           console.log('✅ Usuario registrado exitosamente:', response);
-          this.successMessage = '¡Usuario registrado exitosamente! Redirigiendo al login...';
+          this.successMessage = 'User registered successfully! Redirecting to login...';
           this.isLoading = false;
           
           // Redirigir al login después de 2 segundos
@@ -73,7 +73,16 @@ export class RegisterComponent {
         },
         error: (error) => {
           console.error('❌ Error en el registro:', error);
-          this.errorMessage = `Error en el registro: ${error.status} - ${error.message || 'Error desconocido'}`;
+          
+          // Mostrar mensaje amigable según el tipo de error
+          if (error.status === 400) {
+            this.errorMessage = 'The email is already registered';
+          } else if (error.status === 0) {
+            this.errorMessage = 'Connection error. Please check your internet connection';
+          } else {
+            this.errorMessage = `Registration error: ${error.status} - ${error.message || 'Unknown error'}`;
+          }
+          
           this.isLoading = false;
         }
       });

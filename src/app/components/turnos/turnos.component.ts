@@ -39,15 +39,15 @@ export class TurnosComponent implements OnInit {
   dateAvailabilityCache: Map<string, boolean> = new Map();
 
   // Datos del calendario
-  weekDays = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Tue', 'Fri', 'Sat'];
   calendarDays: any[] = [];
 
   // Datos de canchas y horarios
   canchas = [
-    { id: 1, nombre: 'Cancha 1', precio: 5000 },
-    { id: 2, nombre: 'Cancha 2', precio: 4500 },
-    { id: 3, nombre: 'Cancha 3', precio: 4000 },
-    { id: 4, nombre: 'Cancha 4', precio: 3500 }
+    { id: 1, nombre: 'Court 1', precio: 5000 },
+    { id: 2, nombre: 'Court 2', precio: 4500 },
+    { id: 3, nombre: 'Court 3', precio: 4000 },
+    { id: 4, nombre: 'Court 4', precio: 3500 }
   ];
 
   horarios = [
@@ -69,10 +69,9 @@ export class TurnosComponent implements OnInit {
 
   // Métodos de pago
   paymentMethods = [
-    { id: 'credit', name: 'Tarjeta de Crédito', icon: 'fas fa-credit-card' },
-    { id: 'debit', name: 'Tarjeta de Débito', icon: 'fas fa-credit-card' },
-    { id: 'transfer', name: 'Transferencia', icon: 'fas fa-university' },
-    { id: 'cash', name: 'Efectivo', icon: 'fas fa-money-bill-wave' }
+    { id: 'credit', name: 'Credit card', icon: 'fas fa-credit-card' },
+    { id: 'debit', name: 'Debit card', icon: 'fas fa-credit-card' },
+    { id: 'transfer', name: 'Transfer', icon: 'fas fa-university' },
   ];
 
   constructor(
