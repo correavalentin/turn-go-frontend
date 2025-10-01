@@ -1,24 +1,221 @@
 <div class="turnos-container">
-  <h2>Turnos</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Inicio</th>
-        <th>Fin</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let turno of turnos">
-        <td>{{ turno.id }}</td>
-        <td>{{ turno.fechaInicio | date:'short' }}</td>
-        <td>{{ turno.fechaFin | date:'short' }}</td>
-        <td>
-          <button (click)="editarTurno(turno)">Editar</button>
-          <button (click)="eliminarTurno(turno.id)">Eliminar</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- Header con mensaje de bienvenida -->
+  <div class="turnos-header">
+    <div class="welcome-message">
+      <h1>Welcome to Turgo!</h1>
+      <p>Gestiona tus turnos de manera fácil y eficiente</p>
+    </div>
+    
+    <!-- Botones para usuarios no autenticados -->
+    <div class="auth-buttons" *ngIf="!isAuthenticated">
+      <button class="btn-login" (click)="irALogin()">Sign-in</button>
+      <button class="btn-register" (click)="irARegister()">Sign-up</button>
+    </div>
+    
+    <!-- Icono de cuenta para usuarios autenticados -->
+    <div class="user-account" *ngIf="isAuthenticated">
+      <div class="account-dropdown">
+        <button class="account-icon" (click)="toggleDropdown()">
+          <i class="fas fa-user-circle"></i>
+        </button>
+        <div class="dropdown-menu" [class.show]="showDropdown">
+          <div class="user-info">
+            <p class="user-email">{{ userEmail }}</p>
+          </div>
+          <a (click)="verDatosCuenta()">Ver datos de cuenta</a>
+          <a (click)="cerrarSesion()">Cerrar sesión</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flujo de reserva de turnos -->
+  <div class="reserva-container">
+    
+    <!-- Paso 1: Selección de fecha -->
+    <div class="reserva-step" *ngIf="currentStep === 1">
+      <h2>Selecciona una fecha</h2>
+      <div class="calendar-container">
+        <div class="calendar-header">
+          <button class="calendar-nav" (click)="previousMonth()">‹</button>
+          <h3>{{ currentMonth | date:'MMMM yyyy' }}</h3>
+          <button class="calendar-nav" (click)="nextMonth()">›</button>
+        </div>
+        <div class="calendar-grid">
+          <div class="calendar-day-header" *ngFor="let day of weekDays">{{ day }}</div>
+          <div 
+            class="calendar-day" 
+            *ngFor="let day of calendarDays" 
+            [class.available]="day.available"
+            [class.selected]="day.selected"
+            [class.other-month]="!day.currentMonth"
+            (click)="selectDate(day)"
+            [attr.disabled]="!day.available">
+            {{ day.day }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Paso 2: Selección de horario y cancha -->
+    <div class="reserva-step" *ngIf="currentStep === 2">
+      <div class="step-header">
+        <button class="btn-back-step" (click)="goBackToStep(1)">
+          <i class="fas fa-arrow-left"></i> Cambiar fecha
+        </button>
+        <h2>Selecciona horario y cancha</h2>
+        <p class="selected-date">{{ selectedDate | date:'fullDate' }}</p>
+      </div>
+      
+      <div class="schedule-table-container">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>Horario</th>
+              <th *ngFor="let cancha of canchas">{{ cancha.nombre }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let horario of horarios">
+              <td class="time-cell">{{ horario.hora }}</td>
+              <td 
+                *ngFor="let cancha of canchas" 
+                class="cancha-cell"
+                [class.available]="getSlotStatus(cancha.id, horario.id) === 1"
+                [class.occupied]="getSlotStatus(cancha.id, horario.id) === 2"
+                [class.selected]="isSlotSelected(cancha.id, horario.id)"
+                (click)="selectTimeSlot(cancha.id, horario.id)">
+                <div class="slot-content">
+                  <span class="price" *ngIf="getSlotStatus(cancha.id, horario.id) === 1">${{ getSlotPrice(cancha.id, horario.id) }}</span>
+                  <span class="status" *ngIf="getSlotStatus(cancha.id, horario.id) === 2">Ocupado</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Paso 2.5: Datos del usuario (solo para usuarios no autenticados) -->
+    <div class="reserva-step" *ngIf="currentStep === 2.5">
+      <div class="step-header">
+        <button class="btn-back-step" (click)="goBackToStep(2)">
+          <i class="fas fa-arrow-left"></i> Cambiar horario
+        </button>
+        <h2>Datos de contacto</h2>
+        <p class="step-description">Ingresa tus datos para completar la reserva</p>
+        <div class="reservation-summary">
+          <p><strong>Fecha:</strong> {{ selectedDate | date:'fullDate' }}</p>
+          <p><strong>Horario:</strong> {{ getTimeRange(selectedTimeSlot) }}</p>
+          <p><strong>Cancha:</strong> {{ selectedCancha?.nombre }}</p>
+          <p><strong>Precio total:</strong> ${{ selectedTimeSlot?.precio }}</p>
+        </div>
+      </div>
+      
+      <div class="user-data-form">
+        <div class="form-group">
+          <label for="nombre">Nombre *</label>
+          <input 
+            type="text" 
+            id="nombre" 
+            [(ngModel)]="userData.nombre" 
+            placeholder="Ingresa tu nombre"
+            class="form-input"
+            [class.error]="userData.nombre.trim() === ''">
+        </div>
+        
+        <div class="form-group">
+          <label for="apellido">Apellido *</label>
+          <input 
+            type="text" 
+            id="apellido" 
+            [(ngModel)]="userData.apellido" 
+            placeholder="Ingresa tu apellido"
+            class="form-input"
+            [class.error]="userData.apellido.trim() === ''">
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input 
+            type="email" 
+            id="email" 
+            [(ngModel)]="userData.email" 
+            placeholder="Ingresa tu email"
+            class="form-input"
+            [class.error]="userData.email.trim() === '' || !isValidEmail(userData.email)">
+          <small class="form-help" *ngIf="userData.email.trim() !== '' && !isValidEmail(userData.email)">
+            Por favor ingresa un email válido
+          </small>
+        </div>
+        
+        <div class="form-actions">
+          <button 
+            class="btn-continue" 
+            (click)="proceedToPayment()" 
+            [disabled]="!validateUserData()">
+            Continuar al pago
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Paso 3: Método de pago -->
+    <div class="reserva-step" *ngIf="currentStep === 3">
+      <div class="step-header">
+        <button class="btn-back-step" (click)="goBackToStep(isAuthenticated ? 2 : 2.5)">
+          <i class="fas fa-arrow-left"></i> {{ isAuthenticated ? 'Cambiar horario' : 'Cambiar datos' }}
+        </button>
+        <h2>Método de pago</h2>
+        <div class="reservation-summary">
+          <p><strong>Fecha:</strong> {{ selectedDate | date:'fullDate' }}</p>
+          <p><strong>Horario:</strong> {{ getTimeRange(selectedTimeSlot) }}</p>
+          <p><strong>Cancha:</strong> {{ selectedCancha?.nombre }}</p>
+          <p><strong>Precio total:</strong> ${{ selectedTimeSlot?.precio }}</p>
+          <p><strong>Seña (50%):</strong> ${{ getDepositAmount() }}</p>
+        </div>
+      </div>
+
+      <div class="payment-methods">
+        <h3>Selecciona método de pago</h3>
+        <div class="payment-options">
+          <div 
+            class="payment-option" 
+            *ngFor="let method of paymentMethods"
+            [class.selected]="selectedPaymentMethod === method.id"
+            (click)="selectPaymentMethod(method.id)">
+            <i [class]="method.icon"></i>
+            <span>{{ method.name }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="payment-actions">
+        <button class="btn-confirm" (click)="confirmReservation()" [disabled]="!selectedPaymentMethod">
+          Confirmar reserva - ${{ getDepositAmount() }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Paso 4: Confirmación -->
+    <div class="reserva-step" *ngIf="currentStep === 4">
+      <div class="confirmation-container">
+        <div class="success-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h2>¡Reserva confirmada!</h2>
+        <div class="reservation-details">
+          <p><strong>Código de reserva:</strong> {{ reservationCode }}</p>
+          <p><strong>Fecha:</strong> {{ selectedDate | date:'fullDate' }}</p>
+          <p><strong>Horario:</strong> {{ getTimeRange(selectedTimeSlot) }}</p>
+          <p><strong>Cancha:</strong> {{ selectedCancha?.nombre }}</p>
+          <p><strong>Seña pagada:</strong> ${{ getDepositAmount() }}</p>
+        </div>
+        <button class="btn-new-reservation" (click)="startNewReservation()">
+          Hacer nueva reserva
+        </button>
+      </div>
+    </div>
+
+  </div>
 </div>
