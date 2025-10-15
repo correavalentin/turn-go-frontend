@@ -1,10 +1,10 @@
-import ICliente from './ICliente.ts'
-import IHorario from './IHorario.ts'
+import { ICliente } from './ICliente'
+import { IHorario } from './IHorario'
 
 export interface ITurno {
   id: number,
   fechaInicio: Date,
   estado: string,
-  cliente: null || ICliente
+  cliente: null | ICliente
   horario: IHorario
 }

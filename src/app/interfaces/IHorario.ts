@@ -1,4 +1,4 @@
-import ICancha from './ICancha.ts'
+import { ICancha } from './ICancha'
 
 export interface IHorario {
   id: number,
