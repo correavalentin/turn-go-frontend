@@ -8,3 +8,6 @@ export interface ITurno {
   cliente: null | ICliente
   horario: IHorario
 }
+
+export type ITurnoWithoutId = Omit<ITurno, 'id'>
+

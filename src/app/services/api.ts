@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = 'http://localhost:8080/api';// Aca va la dirreccion del back
+  private baseUrl = 'http://localhost:8080/api/v1';// Aca va la dirreccion del back
 
   constructor(private http: HttpClient) {}
 
