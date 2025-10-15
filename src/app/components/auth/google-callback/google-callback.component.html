@@ -1,0 +1,37 @@
+<div class="callback-container">
+  <div class="callback-content">
+    <div class="callback-card">
+      <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <h2>Procesando autenticación...</h2>
+        <p>Por favor espera mientras verificamos tu cuenta de Google.</p>
+      </div>
+
+      <div *ngIf="!isLoading && successMessage" class="success-state">
+        <div class="success-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h2>¡Autenticación exitosa!</h2>
+        <p>{{ successMessage }}</p>
+        <div class="callback-actions">
+          <button class="btn btn-primary" (click)="goToTurnos()">
+            Ir a Turnos
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="!isLoading && errorMessage" class="error-state">
+        <div class="error-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h2>Error de autenticación</h2>
+        <p>{{ errorMessage }}</p>
+        <div class="callback-actions">
+          <button class="btn btn-secondary" (click)="goToLogin()">
+            Volver al Login
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

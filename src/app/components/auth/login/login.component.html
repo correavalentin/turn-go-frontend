@@ -1,27 +1,57 @@
 <div class="login-container">
+  <!-- Botón para volver a turnos -->
+  <div class="back-button-container">
+    <button class="btn-back" (click)="volverATurnos()">
+      <i class="fas fa-arrow-left"></i> Go back
+    </button>
+  </div>
+  
   <div class="login-content">
     <!-- Formulario de Login (lado izquierdo) -->
     <div class="login-form-container">
       <div class="login-card">
         <h2 class="login-title">Login</h2>
         
+        <!-- Mensajes de estado -->
+        <div *ngIf="errorMessage" class="alert alert-danger">
+          {{ errorMessage }}
+        </div>
+        
+        <div *ngIf="successMessage" class="alert alert-success">
+          {{ successMessage }}
+        </div>
+        
         <form class="login-form" (ngSubmit)="onSubmit()">
           <div class="form-group">
             <label for="email" class="form-label">Email</label>
-            <input type="email" id="email" class="form-control" [(ngModel)]="email" name="email">
+            <input type="email" id="email" class="form-control" [(ngModel)]="email" name="email" [disabled]="isLoading">
           </div>
           
           <div class="form-group">
             <label for="password" class="form-label">Password</label>
-            <input type="password" id="password" class="form-control" [(ngModel)]="password" name="password">
+            <input type="password" id="password" class="form-control" [(ngModel)]="password" name="password" [disabled]="isLoading">
           </div>
           
           <div class="form-buttons">
-            <button type="button" class="btn btn-secondary" (click)="goToRegister()">
+            <button type="button" class="btn btn-secondary" (click)="goToRegister()" [disabled]="isLoading">
               I don't have an account
             </button>
-            <button type="submit" class="btn btn-primary">
-              Login
+            <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+              <span *ngIf="isLoading">Conectando...</span>
+              <span *ngIf="!isLoading">Login</span>
+            </button>
+          </div>
+
+          <!-- Separador -->
+          <div class="divider">
+            <span>o</span>
+          </div>
+
+          <!-- Botón de Google -->
+          <div class="google-login">
+            <button type="button" class="btn btn-google" (click)="googleSignIn()" [disabled]="isLoading">
+              <img src="assets/images/google-icon.svg" alt="Google" class="google-icon">
+              Continue with Google
             </button>
           </div>
         </form>
