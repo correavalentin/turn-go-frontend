@@ -4,6 +4,9 @@ import { TurnoService } from '../../services/turno.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HorariosService } from '../../services/horarios.service';
+import { IHorario } from '../../interfaces/IHorario';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-turnos',
@@ -49,24 +52,10 @@ export class TurnosComponent implements OnInit {
     { id: 3, nombre: 'Court 3', precio: 4000 },
     { id: 4, nombre: 'Court 4', precio: 3500 }
   ];
-
-  horarios = [
-    { id: 1, hora: '08:00', precio: 1.0 },
-    { id: 2, hora: '09:00', precio: 1.0 },
-    { id: 3, hora: '10:00', precio: 1.0 },
-    { id: 4, hora: '11:00', precio: 1.0 },
-    { id: 5, hora: '12:00', precio: 1.2 },
-    { id: 6, hora: '13:00', precio: 1.2 },
-    { id: 7, hora: '14:00', precio: 1.2 },
-    { id: 8, hora: '15:00', precio: 1.0 },
-    { id: 9, hora: '16:00', precio: 1.0 },
-    { id: 10, hora: '17:00', precio: 1.0 },
-    { id: 11, hora: '18:00', precio: 1.0 },
-    { id: 12, hora: '19:00', precio: 1.2 },
-    { id: 13, hora: '20:00', precio: 1.2 },
-    { id: 14, hora: '21:00', precio: 1.2 }
-  ];
-
+  
+    horarios: IHorario[] = [ {id: 1, cancha: {id: 1, numero: '1'}, horaInicio:'12:30', horaFin: '14:30'} 
+  ]
+  
   // Métodos de pago
   paymentMethods = [
     { id: 'credit', name: 'Credit card', icon: 'fas fa-credit-card' },
@@ -76,7 +65,8 @@ export class TurnosComponent implements OnInit {
 
   constructor(
     private turnoService: TurnoService,
-    private router: Router
+    private router: Router,
+    private horarioService: HorariosService
   ) {}
 
   ngOnInit() {
@@ -85,6 +75,22 @@ export class TurnosComponent implements OnInit {
     this.generateCalendar();
   }
 
+
+  //Obtener turnos disponibles
+  getDisponibles(date:Date) {
+    return this.turnoService.getDisplonibles(date);
+  }
+  
+  //Obetener todos los horarios existentes
+  getHorarios() {
+    return this.horarioService.getHorarios()
+  }
+  
+  //Obtener id canchas
+  getCanchas() {
+    return this.getHorarios().pipe(map((horarios: IHorario[]) => [...new Set(horarios.map(h => h.cancha))]))
+  }
+  
   verificarAutenticacion() {
     const token = localStorage.getItem('token');
     if (token) {
@@ -258,7 +264,7 @@ export class TurnosComponent implements OnInit {
   getSlotPrice(canchaId: number, horarioId: number): number {
     const cancha = this.canchas.find(c => c.id === canchaId);
     const horario = this.horarios.find(h => h.id === horarioId);
-    return Math.round(cancha!.precio * horario!.precio);
+    return 24000;
   }
 
   selectTimeSlot(canchaId: number, horarioId: number) {

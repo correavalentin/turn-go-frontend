@@ -77,7 +77,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let horario of horarios">
-              <td class="time-cell">{{ horario.hora }}</td>
+              <td class="time-cell">{{ `${horario.horaInicio}-${horario.horaFin}`}}</td>
               <td 
                 *ngFor="let cancha of canchas" 
                 class="cancha-cell"
