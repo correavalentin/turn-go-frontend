@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HorariosService } from '../../services/horarios.service';
 import { IHorario } from '../../interfaces/IHorario';
-import { map } from 'rxjs';
+import { firstValueFrom, map } from 'rxjs';
 
 @Component({
   selector: 'app-turnos',
@@ -75,10 +75,9 @@ export class TurnosComponent implements OnInit {
     this.generateCalendar();
   }
 
-
   //Obtener turnos disponibles
-  getDisponibles(date:Date) {
-    return this.turnoService.getDisplonibles(date);
+  getTurnosDisponibles(date:Date) {
+    return this.turnoService.getDisponibles(date);
   }
   
   //Obetener todos los horarios existentes
@@ -148,7 +147,7 @@ export class TurnosComponent implements OnInit {
   }
 
   // Métodos para el flujo de reserva
-  generateCalendar() {
+  async generateCalendar() {
     const year = this.currentMonth.getFullYear();
     const month = this.currentMonth.getMonth();
     
@@ -166,7 +165,7 @@ export class TurnosComponent implements OnInit {
       const isCurrentMonth = date.getMonth() === month;
       const isToday = this.isToday(date);
       const isPast = date < new Date() && !isToday;
-      const hasAvailability = this.checkDateAvailability(date);
+      const hasAvailability = await this.checkDateAvailability(date);
       const isAvailable = !isPast && isCurrentMonth && hasAvailability;
       
       this.calendarDays.push({
@@ -179,19 +178,9 @@ export class TurnosComponent implements OnInit {
     }
   }
 
-  checkDateAvailability(date: Date): boolean {
-    // Usar cache para mantener consistencia de disponibilidad de fechas
-    const key = date.toDateString();
-    
-    if (!this.dateAvailabilityCache.has(key)) {
-      // Simular disponibilidad de fechas - en el futuro esto vendrá del backend
-      // Simular que algunos días tienen turnos disponibles y otros no
-      const random = Math.random();
-      const isAvailable = random > 0.2; // 80% de días con disponibilidad
-      this.dateAvailabilityCache.set(key, isAvailable);
-    }
-    
-    return this.dateAvailabilityCache.get(key)!;
+  async checkDateAvailability(date: Date): Promise<boolean> {
+    const arrayTurnosD = await firstValueFrom(this.getTurnosDisponibles(date));
+    return arrayTurnosD.length != 0;
   }
 
   isToday(date: Date): boolean {
@@ -305,11 +294,12 @@ export class TurnosComponent implements OnInit {
       this.currentStep = 3;
     }
   }
-
+  
   getDepositAmount(): number {
-    return Math.round((this.selectedTimeSlot?.precio || 0) * 0.5);
-  }
-
+      return Math.round((this.selectedTimeSlot?.precio || 0) * 0.5);
+      }
+      
+      /*
   getTimeRange(horario: any): string {
     if (!horario) return '';
     
@@ -322,6 +312,7 @@ export class TurnosComponent implements OnInit {
     
     return `${startTime} - ${endTime}`;
   }
+*/
 
   confirmReservation() {
     if (!this.selectedPaymentMethod) return;

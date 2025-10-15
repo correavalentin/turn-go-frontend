@@ -27,7 +27,7 @@ export class TurnoService {
     return this.http.delete(`${this.baseUrl}/${id}`);
   }
 
-  getDisplonibles(date: Date) : Observable<any> {
+  getDisponibles(date: Date) : Observable<any> {
     return this.http.get(`${this.baseUrl}/disponibles?fecha=${date}`)
   }
 }
