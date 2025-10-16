@@ -79,15 +79,11 @@
             <tr *ngFor="let horario of horarios">
               <td class="time-cell">{{ `${horario.horaInicio}-${horario.horaFin}`}}</td>
               <td 
-                *ngFor="let cancha of canchas" 
+                *ngFor="let horario of horariosMarcados" 
                 class="cancha-cell"
-                [class.available]="getSlotStatus(cancha.id, horario.id) === 1"
-                [class.occupied]="getSlotStatus(cancha.id, horario.id) === 2"
-                [class.selected]="isSlotSelected(cancha.id, horario.id)"
                 (click)="selectTimeSlot(cancha.id, horario.id)">
                 <div class="slot-content">
-                  <span class="price" *ngIf="getSlotStatus(cancha.id, horario.id) === 1">${{ getSlotPrice(cancha.id, horario.id) }}</span>
-                  <span class="status" *ngIf="getSlotStatus(cancha.id, horario.id) === 2">Ocuppied</span>
+                  <span class="status"> {{ horario.ocupado ? 'Ocupado' : 'Disponible' }}</span>
                 </div>
               </td>
             </tr>
