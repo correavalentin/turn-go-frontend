@@ -72,22 +72,21 @@
           <thead>
             <tr>
               <th>Time</th>
-              <th *ngFor="let cancha of canchas">{{ cancha.nombre }}</th>
+              <th *ngFor="let cancha of canchasDisponibles">Court {{ cancha.numero }}</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let horario of horarios">
-              <td class="time-cell">{{ horario.hora }}</td>
+            <tr *ngFor="let horario of horariosMarcados">
+              <td class="time-cell">{{ `${horario.horaInicio}-${horario.horaFin}`}}</td>
               <td 
-                *ngFor="let cancha of canchas" 
+                *ngFor="let cancha of canchasDisponibles" 
                 class="cancha-cell"
-                [class.available]="getSlotStatus(cancha.id, horario.id) === 1"
-                [class.occupied]="getSlotStatus(cancha.id, horario.id) === 2"
-                [class.selected]="isSlotSelected(cancha.id, horario.id)"
-                (click)="selectTimeSlot(cancha.id, horario.id)">
+                [class.occupied]="horario.ocupado"
+                [class.available]="!horario.ocupado && horario.cancha.id === cancha.id"
+                (click)="selectTimeSlot(cancha.id, horario.id)"> 
                 <div class="slot-content">
-                  <span class="price" *ngIf="getSlotStatus(cancha.id, horario.id) === 1">${{ getSlotPrice(cancha.id, horario.id) }}</span>
-                  <span class="status" *ngIf="getSlotStatus(cancha.id, horario.id) === 2">Ocuppied</span>
+                  <span class="price" *ngIf="!horario.ocupado && horario.cancha.id === cancha.id">${{ getSlotPrice(cancha.id, horario.id) }}</span>
+                  <span class="status" *ngIf="horario.ocupado">Ocuppied</span>
                 </div>
               </td>
             </tr>
@@ -170,7 +169,7 @@
         <div class="reservation-summary">
           <p><strong>Date:</strong> {{ selectedDate | date:'fullDate' }}</p>
           <p><strong>Time:</strong> {{ getTimeRange(selectedTimeSlot) }}</p>
-          <p><strong>Court:</strong> {{ selectedCancha?.nombre }}</p>
+          <p><strong>Court:</strong> {{ selectedCancha?.numero }}</p>
           <p><strong>Total price:</strong> ${{ selectedTimeSlot?.precio }}</p>
           <p><strong>Sign (50%):</strong> ${{ getDepositAmount() }}</p>
         </div>

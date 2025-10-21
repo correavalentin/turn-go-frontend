@@ -2,6 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ITurnoDisponibleResponse } from "../interfaces/ITurnoDisponible";
 
 @Injectable({
   providedIn: 'root'
@@ -25,5 +26,11 @@ export class TurnoService {
 
   eliminarTurno(id: number): Observable<any> {
     return this.http.delete(`${this.baseUrl}/${id}`);
+  }
+
+  getDisponibles(date: Date) : Observable<ITurnoDisponibleResponse[]> {
+    // Formatear la fecha como ISO string para el backend
+    const fechaFormateada = date.toISOString().split('T')[0]; // YYYY-MM-DD
+    return this.http.get<ITurnoDisponibleResponse[]>(`${this.baseUrl}/disponibles?fecha=${fechaFormateada}`)
   }
 }
