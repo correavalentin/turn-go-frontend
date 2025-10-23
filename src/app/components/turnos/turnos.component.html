@@ -76,17 +76,17 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let horario of horariosMarcados">
-              <td class="time-cell">{{ `${horario.horaInicio}-${horario.horaFin}`}}</td>
+            <tr *ngFor="let franja of franjasHorarias">
+              <td class="time-cell">{{ franja.horaInicio }}-{{ franja.horaFin }}</td>
               <td 
                 *ngFor="let cancha of canchasDisponibles" 
                 class="cancha-cell"
-                [class.occupied]="horario.ocupado"
-                [class.available]="!horario.ocupado && horario.cancha.id === cancha.id"
-                (click)="selectTimeSlot(cancha.id, horario.id)"> 
+                [class.occupied]="!isSlotAvailable(cancha.id, franja.horaInicio, franja.horaFin)"
+                [class.available]="isSlotAvailable(cancha.id, franja.horaInicio, franja.horaFin)"
+                (click)="selectTimeSlot(cancha.id, franja.horaInicio, franja.horaFin)"> 
                 <div class="slot-content">
-                  <span class="price" *ngIf="!horario.ocupado && horario.cancha.id === cancha.id">${{ getSlotPrice(cancha.id, horario.id) }}</span>
-                  <span class="status" *ngIf="horario.ocupado">Ocuppied</span>
+                  <span class="status available" *ngIf="isSlotAvailable(cancha.id, franja.horaInicio, franja.horaFin)">Available</span>
+                  <span class="status occupied" *ngIf="!isSlotAvailable(cancha.id, franja.horaInicio, franja.horaFin)">Occupied</span>
                 </div>
               </td>
             </tr>
@@ -139,11 +139,11 @@
           <input 
             type="email" 
             id="email" 
-            [(ngModel)]="userData.email" 
+            [(ngModel)]="userData.correo" 
             placeholder="Enter your email"
             class="form-input"
-            [class.error]="userData.email.trim() === '' || !isValidEmail(userData.email)">
-          <small class="form-help" *ngIf="userData.email.trim() !== '' && !isValidEmail(userData.email)">
+            [class.error]="userData.correo.trim() === '' || !isValidEmail(userData.correo)">
+          <small class="form-help" *ngIf="userData.correo.trim() !== '' && !isValidEmail(userData.correo)">
             Please enter a valid email
           </small>
         </div>

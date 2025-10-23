@@ -22,7 +22,6 @@ export class GoogleAuthService {
 
   // Procesar la respuesta del callback de Google
   processGoogleCallback(queryParams: any): any {
-    console.log('Procesando callback de Google:', queryParams);
     
     const accessToken = queryParams['accessToken'];
     const refreshToken = queryParams['refreshToken'];
@@ -49,7 +48,6 @@ export class GoogleAuthService {
         localStorage.setItem('refreshToken', refreshToken);
       }
       
-      console.log('✅ Autenticación con Google exitosa');
       return {
         success: true,
         accessToken,

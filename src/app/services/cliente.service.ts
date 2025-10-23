@@ -18,6 +18,10 @@ export class ClienteService {
     return this.http.get(`${this.baseUrl}/${id}`);
   }
 
+  getClienteByEmail(email: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}?email=${email}`);
+  }
+
   crearCliente(cliente: any): Observable<any> {
     return this.http.post(this.baseUrl, cliente);
   }

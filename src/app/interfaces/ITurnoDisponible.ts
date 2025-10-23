@@ -1,11 +1,11 @@
 export interface IHorarioDisponible {
-  horarioId: number;
+  horarioId: number | string;
   horaInicio: string;
   horaFin: string;
 }
 
 export interface ITurnoDisponibleResponse {
-  canchaId: number;
+  canchaId: number | string;
   numeroCancha: string;
   horarios: IHorarioDisponible[];
 }

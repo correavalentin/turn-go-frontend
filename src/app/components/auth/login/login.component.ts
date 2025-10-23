@@ -48,7 +48,6 @@ export class LoginComponent {
     this.usuarioService.login({ email: this.email, password: this.password })
       .subscribe({
         next: (response) => {
-          console.log('✅ Conexión exitosa:', response);
           this.successMessage = 'Login successful! Redirecting to home page...';
           this.isLoading = false;
           

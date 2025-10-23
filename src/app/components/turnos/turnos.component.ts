@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HorariosService } from '../../services/horarios.service';
+import { ClienteService } from '../../services/cliente.service';
 import { IHorario } from '../../interfaces/IHorario';
 import { firstValueFrom, map, toArray } from 'rxjs';
 import { ICancha } from '../../interfaces/ICancha';
@@ -23,6 +24,10 @@ export class TurnosComponent implements OnInit {
   userEmail: string = '';
   horariosMarcados: any[] = []; 
   canchasDisponibles: ICancha[] = [];
+  
+  // Franjas horarias únicas y mapa de disponibilidad
+  franjasHorarias: { horaInicio: string, horaFin: string }[] = [];
+  disponibilidadMap: Map<string, boolean> = new Map();
 
   // Variables para el flujo de reserva
   currentStep: number = 1;
@@ -38,7 +43,7 @@ export class TurnosComponent implements OnInit {
   userData = {
     nombre: '',
     apellido: '',
-    email: ''
+    correo: ''
   };
   
   // Cache para estados de slots (para mantener consistencia)
@@ -46,33 +51,8 @@ export class TurnosComponent implements OnInit {
   dateAvailabilityCache: Map<string, boolean> = new Map();
 
   // Datos del calendario
-  weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Tue', 'Fri', 'Sat'];
+  weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   calendarDays: any[] = [];
-
-  // Datos de canchas y horarios
-  canchas = [
-    { id: 1, nombre: 'Court 1', precio: 5000 },
-    { id: 2, nombre: 'Court 2', precio: 4500 },
-    { id: 3, nombre: 'Court 3', precio: 4000 },
-    { id: 4, nombre: 'Court 4', precio: 3500 }
-  ];
-
-  horarios = [
-    { id: 1, hora: '08:00', precio: 1.0 },
-    { id: 2, hora: '09:00', precio: 1.0 },
-    { id: 3, hora: '10:00', precio: 1.0 },
-    { id: 4, hora: '11:00', precio: 1.0 },
-    { id: 5, hora: '12:00', precio: 1.2 },
-    { id: 6, hora: '13:00', precio: 1.2 },
-    { id: 7, hora: '14:00', precio: 1.2 },
-    { id: 8, hora: '15:00', precio: 1.0 },
-    { id: 9, hora: '16:00', precio: 1.0 },
-    { id: 10, hora: '17:00', precio: 1.0 },
-    { id: 11, hora: '18:00', precio: 1.0 },
-    { id: 12, hora: '19:00', precio: 1.2 },
-    { id: 13, hora: '20:00', precio: 1.2 },
-    { id: 14, hora: '21:00', precio: 1.2 }
-  ];
 
   // Métodos de pago
   paymentMethods = [
@@ -84,7 +64,8 @@ export class TurnosComponent implements OnInit {
   constructor(
     private turnoService: TurnoService,
     private router: Router,
-    private horarioService: HorariosService
+    private horarioService: HorariosService,
+    private clienteService: ClienteService
   ) {}
 
   ngOnInit() {
@@ -92,6 +73,7 @@ export class TurnosComponent implements OnInit {
     this.cargarTurnos();
     this.generateCalendar();
   }
+
 
   //Obtener turnos disponibles
   getHorariosDisponibles(date:Date) {
@@ -115,7 +97,7 @@ export class TurnosComponent implements OnInit {
     
     // Mapear las canchas de la respuesta del backend
     const canchas = response.map(item => ({
-      id: item.canchaId,
+      id: Number(item.canchaId), // Convertir a number
       numero: item.numeroCancha
     }));
 
@@ -269,7 +251,7 @@ export class TurnosComponent implements OnInit {
     try {
       // Cargar canchas y horarios disponibles para la fecha seleccionada
       this.canchasDisponibles = await this.getCanchasDate(day.date);
-      this.horariosMarcados = await this.cargarHorarios(day.date);
+      await this.cargarHorarios(day.date, this.canchasDisponibles);
 
       // Avanzar al siguiente paso
       this.currentStep = 2;
@@ -293,58 +275,78 @@ export class TurnosComponent implements OnInit {
     }
   }
 
-  async cargarHorarios(date: Date) {
+  async cargarHorarios(date: Date, canchas: ICancha[]) {
     try {
         const horarios = await firstValueFrom(this.getHorarios()) as IHorario[];
         const turnosDisponibles = await firstValueFrom(this.getHorariosDisponibles(date));
 
-        if (!turnosDisponibles?.length) {
-            console.warn('No hay turnos disponibles.');
-            // Todos los horarios estarán ocupados
-            return horarios.map((h: IHorario) => ({ ...h, ocupado: true }));
-        }
+        // 1. Extraer franjas horarias únicas
+        const franjasSet = new Set<string>();
+        horarios.forEach(horario => {
+            // Normalizar formato de hora (quitar segundos si existen)
+            const horaInicio = horario.horaInicio.substring(0, 5); // HH:MM
+            const horaFin = horario.horaFin.substring(0, 5); // HH:MM
+            const franjaKey = `${horaInicio}-${horaFin}`;
+            franjasSet.add(franjaKey);
+        });
 
-        // Crear un mapa de horarios disponibles por cancha
-        const horariosDisponiblesMap = new Map();
-        turnosDisponibles.forEach(cancha => {
-            cancha.horarios.forEach(horario => {
-                const key = `${cancha.canchaId}-${horario.horarioId}`;
-                horariosDisponiblesMap.set(key, true);
+        // Convertir Set a array de objetos
+        this.franjasHorarias = Array.from(franjasSet).map(franjaKey => {
+            const [horaInicio, horaFin] = franjaKey.split('-');
+            return { horaInicio, horaFin };
+        });
+
+        // 2. Crear mapa de disponibilidad
+        this.disponibilidadMap.clear();
+        
+        // Marcar todos como NO disponibles por defecto
+        canchas.forEach(cancha => {
+            this.franjasHorarias.forEach(franja => {
+                const key = `${cancha.id}-${franja.horaInicio}-${franja.horaFin}`;
+                this.disponibilidadMap.set(key, false);
             });
         });
 
-        const horariosMarcados = horarios.map((h: IHorario) => {
-            const key = `${h.cancha.id}-${h.id}`;
-            const estaDisponible = horariosDisponiblesMap.has(key);
-            
-            return {
-                ...h,
-                ocupado: !estaDisponible
-            };
-        });
+        // Marcar como disponibles los que realmente están disponibles
+        // El backend devuelve solo los horarios que NO tienen turnos reservados
+        
+        if (turnosDisponibles?.length) {
+            turnosDisponibles.forEach(cancha => {
+                const canchaId = Number(cancha.canchaId);
+                cancha.horarios.forEach(horario => {
+                    // Normalizar formato de hora (quitar segundos si existen)
+                    const horaInicio = horario.horaInicio.substring(0, 5); // HH:MM
+                    const horaFin = horario.horaFin.substring(0, 5); // HH:MM
+                    const key = `${canchaId}-${horaInicio}-${horaFin}`;
+                    this.disponibilidadMap.set(key, true);
+                });
+            });
+        }
 
-        return horariosMarcados;
+        return this.franjasHorarias;
 
     } catch (error) {
         console.error('Error obteniendo o procesando horarios:', error);
+        this.franjasHorarias = [];
+        this.disponibilidadMap.clear();
         return [];
     }
   }
 
-  isSlotSelected(canchaId: number, horarioId: number): boolean {
-    return this.selectedCancha?.id === canchaId && this.selectedTimeSlot?.id === horarioId;
+  isSlotSelected(canchaId: number, horaInicio: string, horaFin: string): boolean {
+    return this.selectedCancha?.id === canchaId && 
+           this.selectedTimeSlot?.horaInicio === horaInicio && 
+           this.selectedTimeSlot?.horaFin === horaFin;
   }
 
-  getSlotPrice(canchaId: number, horarioId: number): number {
-    const cancha = this.canchas.find(c => c.id === canchaId);
-    const horario = this.horarios.find(h => h.id === horarioId);
-    return Math.round(cancha!.precio * horario!.precio);
+  isSlotAvailable(canchaId: number, horaInicio: string, horaFin: string): boolean {
+    const key = `${canchaId}-${horaInicio}-${horaFin}`;
+    return this.disponibilidadMap.get(key) || false;
   }
 
-  selectTimeSlot(canchaId: number, horarioId: number) {
-    // Buscar el horario seleccionado
-    const horarioSeleccionado = this.horariosMarcados.find(h => h.id === horarioId);
-    if (!horarioSeleccionado || horarioSeleccionado.ocupado) return;
+  selectTimeSlot(canchaId: number, horaInicio: string, horaFin: string) {
+    // Verificar que el slot esté disponible
+    if (!this.isSlotAvailable(canchaId, horaInicio, horaFin)) return;
 
     // Buscar la cancha seleccionada
     const canchaSeleccionada = this.canchasDisponibles.find(c => c.id === canchaId);
@@ -353,8 +355,9 @@ export class TurnosComponent implements OnInit {
     // Guardar selección
     this.selectedCancha = canchaSeleccionada;
     this.selectedTimeSlot = {
-      ...horarioSeleccionado,
-      precio: this.getSlotPrice(canchaId, horarioId)
+      horaInicio,
+      horaFin,
+      precio: 20000
     };
 
     // Avanzar según autenticación
@@ -368,8 +371,8 @@ export class TurnosComponent implements OnInit {
   validateUserData(): boolean {
     return this.userData.nombre.trim() !== '' && 
            this.userData.apellido.trim() !== '' && 
-           this.userData.email.trim() !== '' &&
-           this.isValidEmail(this.userData.email);
+           this.userData.correo.trim() !== '' &&
+           this.isValidEmail(this.userData.correo);
   }
 
   isValidEmail(email: string): boolean {
@@ -387,19 +390,126 @@ export class TurnosComponent implements OnInit {
     return Math.round((this.selectedTimeSlot?.precio || 0) * 0.5);
   }
 
-  getTimeRange(horario: any): string {
-    if (!horario) return '';
-    return `${horario.horaInicio}-${horario.horaFin}`;
+  getTimeRange(timeSlot: any): string {
+    if (!timeSlot) return '';
+    return `${timeSlot.horaInicio}-${timeSlot.horaFin}`;
   }
 
-  confirmReservation() {
+  getClienteId(): number | null {
+    if (this.isAuthenticated) {
+      // Para usuarios autenticados, necesitamos buscar o crear un cliente
+      // Por ahora retornamos null para manejar la creación en confirmReservation
+      return null;
+    } else {
+      // Para usuarios no autenticados, necesitamos crear un cliente primero
+      return null;
+    }
+  }
+
+  async confirmReservation() {
     if (!this.selectedPaymentMethod) return;
     
-    // Simular confirmación de reserva
-    this.reservationCode = 'RES' + Math.random().toString(36).substr(2, 8).toUpperCase();
+    try {
+      // Obtener todos los horarios del sistema para buscar el ID correcto
+      const horarios = await firstValueFrom(this.getHorarios()) as IHorario[];
+      
+      // Buscar el horario ID correspondiente usando la información disponible
+      const horario = horarios.find(h => {
+        const horaInicioMatch = h.horaInicio && h.horaInicio.substring(0, 5) === this.selectedTimeSlot.horaInicio;
+        const horaFinMatch = h.horaFin && h.horaFin.substring(0, 5) === this.selectedTimeSlot.horaFin;
+        
+        return horaInicioMatch && horaFinMatch;
+      });
+
+      if (!horario) {
+        alert('Error: No se pudo encontrar el horario seleccionado.');
+        return;
+      }
+
+      let clienteId = this.getClienteId();
+      
+      // Crear cliente para ambos casos (autenticados y no autenticados)
+      let clienteData;
+      
+      if (this.isAuthenticated) {
+        // Para usuarios autenticados, usar datos del token/localStorage
+        // Extraer nombre del email (parte antes del @)
+        const emailParts = this.userEmail.split('@');
+        const nombreUsuario = emailParts[0] || 'Usuario';
+        
+        clienteData = {
+          nombre: nombreUsuario,
+          apellido: 'Usuario',
+          correo: this.userEmail
+        };
+      } else {
+        // Para usuarios no autenticados, usar datos del formulario
+        clienteData = {
+          nombre: this.userData.nombre,
+          apellido: this.userData.apellido,
+          correo: this.userData.correo
+        };
+      }
+      
+      // Verificar si ya existe un cliente con este email
+      this.clienteService.getClienteByEmail(clienteData.correo).subscribe({
+        next: (clientesExistentes) => {
+          let clienteId;
+          
+          if (clientesExistentes && clientesExistentes.length > 0) {
+            // Cliente ya existe, usar su ID
+            clienteId = clientesExistentes[0].id;
+            this.crearTurnoConCliente(clienteId, horario);
+          } else {
+            // Cliente no existe, crear uno nuevo
+            this.clienteService.crearCliente(clienteData).subscribe({
+              next: (cliente) => {
+                this.crearTurnoConCliente(cliente.id, horario);
+              },
+              error: (error) => {
+                console.error('Error creando cliente:', error);
+                alert('Error al crear el cliente. Por favor intente nuevamente.');
+              }
+            });
+          }
+        },
+        error: (error) => {
+          console.error('Error buscando cliente:', error);
+          // Si hay error buscando, intentar crear directamente
+          this.clienteService.crearCliente(clienteData).subscribe({
+            next: (cliente) => {
+              this.crearTurnoConCliente(cliente.id, horario);
+            },
+            error: (error) => {
+              console.error('Error creando cliente:', error);
+              alert('Error al crear el cliente. Por favor intente nuevamente.');
+            }
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Error obteniendo horarios:', error);
+      alert('Error al obtener información del horario. Por favor intente nuevamente.');
+    }
+  }
+
+  private crearTurnoConCliente(clienteId: number, horario: any) {
+    const turnoData = {
+      clienteId: clienteId,
+      horarioId: horario.id,
+      fecha: this.selectedDate?.toISOString().split('T')[0]
+    };
     
-    // Avanzar al paso de confirmación
-    this.currentStep = 4;
+    this.turnoService.crearTurno(turnoData).subscribe({
+      next: (turno) => {
+        this.reservationCode = 'RES' + turno.id;
+        this.currentStep = 4;
+      },
+      error: (error) => {
+        console.error('Error creando turno:', error);
+        alert('Error al crear la reserva. Por favor intente nuevamente.');
+      }
+    });
   }
 
   startNewReservation() {
@@ -412,10 +522,12 @@ export class TurnosComponent implements OnInit {
     this.reservationCode = '';
     this.calendarDays.forEach(d => d.selected = false);
     // Limpiar datos del usuario
-    this.userData = { nombre: '', apellido: '', email: '' };
+    this.userData = { nombre: '', apellido: '', correo: '' };
     // Limpiar cache para generar nuevos estados
     this.slotStatusCache.clear();
     this.dateAvailabilityCache.clear();
+    this.disponibilidadMap.clear();
+    this.franjasHorarias = [];
   }
 
   // Cerrar dropdown cuando se hace clic fuera
