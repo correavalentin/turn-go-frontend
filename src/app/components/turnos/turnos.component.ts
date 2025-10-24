@@ -251,7 +251,7 @@ export class TurnosComponent implements OnInit {
     try {
       // Cargar canchas y horarios disponibles para la fecha seleccionada
       this.canchasDisponibles = await this.getCanchasDate(day.date);
-      await this.cargarHorarios(day.date, this.canchasDisponibles);
+      await this.cargarHorarios(day.date, this.canchasDisponibles.sort((a, b) => (a.numero).localeCompare(b.numero)));
 
       // Avanzar al siguiente paso
       this.currentStep = 2;
