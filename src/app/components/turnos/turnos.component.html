@@ -204,11 +204,11 @@
         </div>
         <h2>¡Reservation confirmed!</h2>
         <div class="reservation-details">
-          <p><strong>Reservation code:</strong> {{ reservationCode }}</p>
-          <p><strong>Date:</strong> {{ selectedDate | date:'fullDate' }}</p>
-          <p><strong>Time:</strong> {{ getTimeRange(selectedTimeSlot) }}</p>
-          <p><strong>Court:</strong> {{ selectedCancha?.nombre }}</p>
-          <p><strong>Sign paid:</strong> ${{ getDepositAmount() }}</p>
+          <p><strong>Reservation code:</strong>RES {{ reservationCode }}</p>
+          <p><strong>Date:</strong>{{ selectedDate | date:'fullDate' }}</p>
+          <p><strong>Time:</strong>{{ getTimeRange(selectedTimeSlot) }}</p>
+          <p><strong>Court:</strong>{{ selectedCancha?.nombre }}</p>
+          <p><strong>Sign paid:</strong>${{ getDepositAmount() }}</p>
         </div>
         <button class="btn-new-reservation" (click)="startNewReservation()">
           Make new reservation

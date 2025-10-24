@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ICliente } from '../interfaces/ICliente';
 
 @Injectable({
   providedIn: 'root'
@@ -18,12 +19,12 @@ export class ClienteService {
     return this.http.get(`${this.baseUrl}/${id}`);
   }
 
-  getClienteByEmail(email: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}?email=${email}`);
+  getClienteByEmail(email: string): Observable<ICliente[] | null> {
+    return this.http.get<ICliente[] | null>(`${this.baseUrl}?email=${email}`);
   }
 
-  crearCliente(cliente: any): Observable<any> {
-    return this.http.post(this.baseUrl, cliente);
+  crearCliente(cliente: any): Observable<ICliente> {
+    return this.http.post<ICliente>(this.baseUrl, cliente);
   }
 
   actualizarCliente(id: number, cliente: any): Observable<any> {
