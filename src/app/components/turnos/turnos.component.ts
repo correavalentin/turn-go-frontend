@@ -395,7 +395,10 @@ export class TurnosComponent implements OnInit {
     return `${timeSlot.horaInicio}-${timeSlot.horaFin}`;
   }
 
-  getClienteId(): number | null {
+
+  //TODO: Hay que cambiar este metodo para que nos devuelva la informacion del usuario autenticado
+  //TODO: Abria que crear un endpoint en el backend para obtener la informacion del usuario autenticado y que devuelva un objeto con los datos del usuario
+  getClienteAutenticado() {
     if (this.isAuthenticated) {
       // Para usuarios autenticados, necesitamos buscar o crear un cliente
       // Por ahora retornamos null para manejar la creación en confirmReservation
@@ -426,11 +429,10 @@ export class TurnosComponent implements OnInit {
         return;
       }
 
-      let clienteId = this.getClienteId();
-      
       // Crear cliente para ambos casos (autenticados y no autenticados)
       let clienteData;
       
+      //TODO: Este if tendria que ser reemplazado por el metodo getClienteAutenticado()
       if (this.isAuthenticated) {
         // Para usuarios autenticados, usar datos del token/localStorage
         // Extraer nombre del email (parte antes del @)
@@ -451,40 +453,14 @@ export class TurnosComponent implements OnInit {
         };
       }
       
-      // Verificar si ya existe un cliente con este email
-      this.clienteService.getClienteByEmail(clienteData.correo).subscribe({
-        next: (clientesExistentes) => {
-          let clienteId;
-          
-          if (clientesExistentes && clientesExistentes.length > 0) {
-            // Cliente ya existe, usar su ID
-            clienteId = clientesExistentes[0].id;
-            this.crearTurnoConCliente(clienteId, horario);
-          } else {
-            // Cliente no existe, crear uno nuevo
-            this.clienteService.crearCliente(clienteData).subscribe({
-              next: (cliente) => {
-                this.crearTurnoConCliente(cliente.id, horario);
-              },
-              error: (error) => {
-                console.error('Error creando cliente:', error);
-                alert('Error al crear el cliente. Por favor intente nuevamente.');
-              }
-            });
-          }
+      // Buscar o crear cliente usando el nuevo método
+      this.clienteService.findOrCreateCliente(clienteData).subscribe({
+        next: (cliente) => {
+          this.crearTurnoConCliente(cliente.id, horario);
         },
         error: (error) => {
-          console.error('Error buscando cliente:', error);
-          // Si hay error buscando, intentar crear directamente
-          this.clienteService.crearCliente(clienteData).subscribe({
-            next: (cliente) => {
-              this.crearTurnoConCliente(cliente.id, horario);
-            },
-            error: (error) => {
-              console.error('Error creando cliente:', error);
-              alert('Error al crear el cliente. Por favor intente nuevamente.');
-            }
-          });
+          console.error('Error buscando/creando cliente:', error);
+          alert('Error al procesar el cliente. Por favor intente nuevamente.');
         }
       });
     } catch (error) {

@@ -33,4 +33,8 @@ export class ClienteService {
   eliminarCliente(id: number): Observable<any> {
     return this.http.delete(`${this.baseUrl}/${id}`);
   }
+
+  findOrCreateCliente(clienteData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/find-or-create`, clienteData);
+  }
 }
