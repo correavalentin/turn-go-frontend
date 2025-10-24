@@ -3,12 +3,12 @@ import { Turno } from './turno.model';
 import { TurnoService } from '../../services/turno.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { HorariosService } from '../../services/horarios.service';
 import { UsuarioService } from '../../services/usuario.service';
 import { ClienteService } from '../../services/cliente.service';
 import { IHorario } from '../../interfaces/IHorario';
-import { firstValueFrom, map, toArray } from 'rxjs';
+import { firstValueFrom, lastValueFrom, map, toArray } from 'rxjs';
 import { ICancha } from '../../interfaces/ICancha';
 import { ITurno } from '../../interfaces/ITurno';
 import { IClienteData } from '../../interfaces/IClienteData';
@@ -17,7 +17,7 @@ import { ICliente } from '../../interfaces/ICliente';
 @Component({
   selector: 'app-turnos',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './turnos.component.html',
   styleUrls: ['./turnos.component.css']
 })
@@ -435,6 +435,7 @@ export class TurnosComponent implements OnInit {
 
       // Crear cliente para ambos casos (autenticados y no autenticados)
       let clienteData: IClienteData = {
+        id: undefined,
         nombre: '',
         apellido: '',
         correo: ''
@@ -442,23 +443,28 @@ export class TurnosComponent implements OnInit {
 
       //TODO: Este if tendria que ser reemplazado por el metodo getClienteAutenticado()
       if (this.isAuthenticated) {
-        // Para usuarios autenticados, usar datos del token/localStorage
-        // Extraer nombre del email (parte antes del @)
-        const emailParts = this.userEmail.split('@');
-        const nombreUsuario = emailParts[0] || 'Usuario';
-
         const token = localStorage.getItem('token')
 
         if (token) {
-          const userData = await firstValueFrom(this.userService.getInfoUsuario(token))
-          console.log('userData', userData)
+          const userData = await firstValueFrom(this.userService.getInfoUsuario(token)) 
+          if (userData.id) {
+          clienteData = {
+            id: userData.id,
+            nombre: userData.firstName,
+            apellido: userData.lastName,
+            correo: userData.email
+          }
+        }
+
+        else {
           clienteData = {
             nombre: userData.firstName,
             apellido: userData.lastName,
             correo: userData.email
           }
         }
-      } else {
+      }
+        else {
         // Para usuarios no autenticados, usar datos del formulario
         clienteData = {
           nombre: this.userData.nombre,
@@ -470,31 +476,21 @@ export class TurnosComponent implements OnInit {
     // Buscar cliente por correo
     let clientes = await firstValueFrom(this.clienteService.getClienteByEmail(clienteData.correo));
     let cliente: ICliente
-    console.log('Clientes encontrado:',clientes)
 
     if (!clientes || clientes.length == 0) {
       // Cliente no existe, crear
-      console.log('Cliente no encontrado, creando')
-      cliente = await firstValueFrom(this.clienteService.crearCliente(clienteData));
+      const {id, ...clienteSinId} = clienteData
+      cliente = await firstValueFrom(this.clienteService.crearCliente(clienteSinId));
     } else {
       cliente = clientes[0]
     }
-
-    console.log('Cliente final:',cliente)
-
+    
+    if (clienteData.id) {
+      await lastValueFrom(this.clienteService.asignarUserId(cliente.id, clienteData.id));
+    }
     this.crearTurnoConCliente(cliente.id, horario)
 
-      // Buscar o crear cliente usando el nuevo método
-      //this.clienteService.getClienteByEmail(clienteData.correo).subscribe({
-      //  next: (cliente) => {
-      //   this.crearTurnoConCliente(cliente.id, horario);
-      //  },
-      //  error: (error) => {
-      //    console.error('Error buscando/creando cliente:', error);
-      //    alert('Error al procesar el cliente. Por favor intente nuevamente.');
-      //  }
-      //});
-    } catch (error) {
+    }} catch (error) {
       console.error('Error obteniendo horarios:', error);
       alert('Error al obtener información del horario. Por favor intente nuevamente.');
     }
@@ -535,6 +531,10 @@ export class TurnosComponent implements OnInit {
     this.dateAvailabilityCache.clear();
     this.disponibilidadMap.clear();
     this.franjasHorarias = [];
+  }
+
+  routeToHome() {
+    window.location.href = '/'
   }
 
   // Cerrar dropdown cuando se hace clic fuera

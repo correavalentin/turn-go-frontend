@@ -38,4 +38,10 @@ export class ClienteService {
   findOrCreateCliente(clienteData: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/find-or-create`, clienteData);
   }
+
+  asignarUserId(cliente: number, userId: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/${cliente}/assign-user-id`, { userId }, {
+      headers: { 'Content-Type': 'application/json' }
+    })
+  }
 }
