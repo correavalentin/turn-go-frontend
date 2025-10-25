@@ -531,6 +531,8 @@ export class TurnosComponent implements OnInit {
     this.dateAvailabilityCache.clear();
     this.disponibilidadMap.clear();
     this.franjasHorarias = [];
+    // Regenerar calendario con disponibilidad actualizada
+    this.generateCalendar();
   }
 
   routeToHome() {
