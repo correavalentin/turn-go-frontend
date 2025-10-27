@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class UsuarioService {
   private baseUrl = 'http://localhost:3001'; // users-api corre en puerto 3001
-  
+
   constructor(private http: HttpClient) {}
 
   // Métodos específicos para autenticación - ESTOS SÍ EXISTEN
@@ -20,7 +20,11 @@ export class UsuarioService {
   }
 
   // Método para obtener el usuario actual - ESTE SÍ EXISTE
-  getUsuarioActual(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/me`);
+  getUsuarioActual(token: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/me`, { headers: {'Authorization': `Bearer ${token}`}});
+  }
+
+  getInfoUsuario(token: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/info`, { headers: {'Authorization': `Bearer ${token}`}})
   }
 }

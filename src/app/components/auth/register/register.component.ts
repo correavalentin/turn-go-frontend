@@ -62,7 +62,6 @@ export class RegisterComponent {
     this.usuarioService.register(userData)
       .subscribe({
         next: (response) => {
-          console.log('✅ Usuario registrado exitosamente:', response);
           this.successMessage = 'User registered successfully! Redirecting to login...';
           this.isLoading = false;
           

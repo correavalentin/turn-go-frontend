@@ -28,7 +28,6 @@ export class GoogleCallbackComponent implements OnInit {
   private processGoogleCallback() {
     // Obtener los parámetros de la URL
     this.route.queryParams.subscribe(params => {
-      console.log('Parámetros recibidos:', params);
       
       const result = this.googleAuthService.processGoogleCallback(params);
       
