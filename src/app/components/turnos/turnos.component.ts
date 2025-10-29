@@ -427,12 +427,11 @@ export class TurnosComponent implements OnInit {
       };
 
       //TODO: Este if tendria que ser reemplazado por el metodo getClienteAutenticado()
-      if (this.isAuthenticated) {
-        const token = localStorage.getItem('token')
+      const token = localStorage.getItem('token')
 
-        if (token) {
-          const userData = await firstValueFrom(this.userService.getInfoUsuario(token)) 
-          if (userData.id) {
+      if (token) {
+        const userData = await firstValueFrom(this.userService.getInfoUsuario(token))
+        if (userData.id) {
           clienteData = {
             id: userData.id,
             nombre: userData.firstName,
@@ -448,34 +447,33 @@ export class TurnosComponent implements OnInit {
             correo: userData.email
           }
         }
-      }
-        else {
-        // Para usuarios no autenticados, usar datos del formulario
-        clienteData = {
-          nombre: this.userData.nombre,
-          apellido: this.userData.apellido,
-          correo: this.userData.correo
-        };
-      }
+      } else {
+          // Para usuarios no autenticados, usar datos del formulario
+          clienteData = {
+            nombre: this.userData.nombre,
+            apellido: this.userData.apellido,
+            correo: this.userData.correo
+          };
+        }
 
-    // Buscar cliente por correo
-    let clientes = await firstValueFrom(this.clienteService.getClienteByEmail(clienteData.correo));
-    let cliente: ICliente
+        // Buscar cliente por correo
+        let clientes = await firstValueFrom(this.clienteService.getClienteByEmail(clienteData.correo));
+        let cliente: ICliente
 
-    if (!clientes || clientes.length == 0) {
-      // Cliente no existe, crear
-      const {id, ...clienteSinId} = clienteData
-      cliente = await firstValueFrom(this.clienteService.crearCliente(clienteSinId));
-    } else {
-      cliente = clientes[0]
-    }
-    
-    if (clienteData.id) {
-      await lastValueFrom(this.clienteService.asignarUserId(cliente.id, clienteData.id));
-    }
-    this.crearTurnoConCliente(cliente.id, horario)
+        if (!clientes || clientes.length == 0) {
+          // Cliente no existe, crear
+          const { id, ...clienteSinId } = clienteData
+          cliente = await firstValueFrom(this.clienteService.crearCliente(clienteSinId));
+        } else {
+          cliente = clientes[0]
+        }
 
-    }} catch (error) {
+        if (clienteData.id) {
+          await lastValueFrom(this.clienteService.asignarUserId(cliente.id, clienteData.id));
+        }
+        this.crearTurnoConCliente(cliente.id, horario)
+
+    } catch (error) {
       console.error('Error obteniendo horarios:', error);
       alert('Error al obtener información del horario. Por favor intente nuevamente.');
     }
