@@ -190,8 +190,14 @@
       </div>
 
       <div class="payment-actions">
-        <button class="btn-confirm" (click)="confirmReservation()" [disabled]="!selectedPaymentMethod">
-          Confirm reservation - ${{ getDepositAmount() }}
+        <!-- Contenedor para Cloudflare Turnstile (render manual desde el componente) -->
+        <div id="turnstile-widget" class="turnstile-container"></div>
+
+        <button
+          class="btn-confirm"
+          (click)="confirmReservation()"
+          [disabled]="!selectedPaymentMethod || isProcessingReservation">
+          {{ isProcessingReservation ? 'Processing...' : 'Confirm reservation - $' + getDepositAmount() }}
         </button>
       </div>
     </div>

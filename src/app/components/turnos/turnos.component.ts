@@ -63,6 +63,13 @@ export class TurnosComponent implements OnInit {
     { id: 'transfer', name: 'Transfer', icon: 'fas fa-university' },
   ];
 
+  // Token del captcha (Cloudflare Turnstile)
+  captchaToken: string | null = null;
+  private turnstileWidgetId: string | null = null;
+  
+  // Flag para evitar múltiples envíos simultáneos
+  isProcessingReservation: boolean = false;
+
   constructor(
     private turnoService: TurnoService,
     private router: Router,
@@ -75,6 +82,95 @@ export class TurnosComponent implements OnInit {
     this.verificarAutenticacion();
     this.cargarTurnos();
     this.generateCalendar();
+  }
+
+  /**
+   * Obtiene los datos del cliente a partir del usuario autenticado (servicio de usuarios).
+   * Si el token es inválido/expirado (401), limpia la sesión y redirige a login.
+   * Si ocurre otro error, muestra un mensaje y corta el flujo.
+   */
+  private async obtenerClienteDataDesdeUsuarioAutenticado(): Promise<IClienteData | null> {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return null;
+    }
+
+    try {
+      const userData = await firstValueFrom(this.userService.getInfoUsuario(token));
+
+      const clienteData: IClienteData = {
+        id: userData.id,
+        nombre: userData.firstName,
+        apellido: userData.lastName,
+        correo: userData.email
+      };
+
+      return clienteData;
+    } catch (error: any) {
+      // Si el token es inválido/expirado, el backend de users-api responde 401
+      if (error?.status === 401) {
+        alert('Tu sesión ha expirado o no es válida. Por favor, vuelve a iniciar sesión.');
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('userEmail');
+        this.router.navigate(['/login']);
+        return null;
+      }
+
+      // Otros errores al obtener la info del usuario
+      console.error('Error obteniendo información de la cuenta del usuario:', error);
+      alert('No se pudo obtener la información de tu cuenta. Intenta nuevamente más tarde.');
+      return null;
+    }
+  }
+
+  private initTurnstileWidget(): void {
+    const tryRender = () => {
+      const widgetContainer = document.getElementById('turnstile-widget');
+      if (!widgetContainer) {
+        // Todavía no se renderizó el paso 3
+        setTimeout(tryRender, 200);
+        return;
+      }
+
+      const turnstileGlobal = (window as any).turnstile;
+      if (typeof turnstileGlobal === 'undefined') {
+        // Script de Turnstile aún no cargó
+        setTimeout(tryRender, 200);
+        return;
+      }
+
+      // Si ya hay un widget renderizado, resetear antes de crear uno nuevo
+      if (this.turnstileWidgetId !== null) {
+        try {
+          turnstileGlobal.reset(this.turnstileWidgetId);
+        } catch (e) {
+          console.warn('Error reseteando widget de Turnstile:', e);
+        }
+      }
+
+      this.turnstileWidgetId = turnstileGlobal.render('#turnstile-widget', {
+        sitekey: '0x4AAAAAACBKrdqR4zRygUsl',
+        callback: (token: string) => {
+          console.log('Turnstile token recibido:', token);
+          this.captchaToken = token;
+        },
+      });
+    };
+
+    tryRender();
+  }
+
+  private resetTurnstileWidget(): void {
+    const turnstileGlobal = (window as any).turnstile;
+    if (typeof turnstileGlobal !== 'undefined' && this.turnstileWidgetId !== null) {
+      try {
+        turnstileGlobal.reset(this.turnstileWidgetId);
+        console.log('Widget de Turnstile reseteado');
+      } catch (e) {
+        console.warn('Error reseteando widget de Turnstile:', e);
+      }
+    }
   }
 
   //Obtener turnos disponibles
@@ -349,6 +445,11 @@ export class TurnosComponent implements OnInit {
 
     // Avanzar según autenticación
     this.currentStep = this.isAuthenticated ? 3 : 2.5;
+
+    // Si el usuario está autenticado y va directo al paso 3, inicializar Turnstile
+    if (this.isAuthenticated) {
+      this.initTurnstileWidget();
+    }
   }
 
   //Borrar?
@@ -372,6 +473,8 @@ export class TurnosComponent implements OnInit {
   proceedToPayment() {
     if (this.validateUserData()) {
       this.currentStep = 3;
+      // Usuario no autenticado: al llegar al paso 3, inicializar Turnstile
+      this.initTurnstileWidget();
     }
   }
   
@@ -401,81 +504,76 @@ export class TurnosComponent implements OnInit {
   async confirmReservation() {
     if (!this.selectedPaymentMethod) return;
 
+    if (!this.captchaToken) {
+      alert('Por favor completa el captcha antes de confirmar la reserva.');
+      return;
+    }
+
+    // Evitar múltiples envíos simultáneos
+    if (this.isProcessingReservation) {
+      return;
+    }
+
+    this.isProcessingReservation = true;
+
     try {
-      // Obtener todos los horarios del sistema para buscar el ID correcto
+      // 1) Obtener horario correspondiente al slot seleccionado
       const horarios = await firstValueFrom(this.getHorarios()) as IHorario[];
 
-      // Buscar el horario ID correspondiente usando la información disponible
       const horario = horarios.find(h => {
         const horaInicioMatch = h.horaInicio && h.horaInicio.substring(0, 5) === this.selectedTimeSlot.horaInicio;
         const horaFinMatch = h.horaFin && h.horaFin.substring(0, 5) === this.selectedTimeSlot.horaFin;
-
         return horaInicioMatch && horaFinMatch;
       });
 
       if (!horario) {
         alert('Error: No se pudo encontrar el horario seleccionado.');
+        this.isProcessingReservation = false;
         return;
       }
 
-      // Crear cliente para ambos casos (autenticados y no autenticados)
-      let clienteData: IClienteData = {
-        id: undefined,
-        nombre: '',
-        apellido: '',
-        correo: ''
-      };
+      // 2) Resolver datos del cliente (autenticado o no autenticado)
+      let clienteData: IClienteData | null = await this.obtenerClienteDataDesdeUsuarioAutenticado();
 
-      //TODO: Este if tendria que ser reemplazado por el metodo getClienteAutenticado()
-      const token = localStorage.getItem('token')
-
-      if (token) {
-        const userData = await firstValueFrom(this.userService.getInfoUsuario(token))
-        if (userData.id) {
-          clienteData = {
-            id: userData.id,
-            nombre: userData.firstName,
-            apellido: userData.lastName,
-            correo: userData.email
-          }
+      // Si no hay datos de cliente autenticado, usar los datos del formulario (flujo no autenticado)
+      if (!clienteData) {
+        // Si el usuario estaba autenticado pero su sesión expiró, obtenerClienteDataDesdeUsuarioAutenticado
+        // ya mostró mensaje y redirigió a login, así que cortamos aquí.
+        const token = localStorage.getItem('token');
+        if (token) {
+          this.isProcessingReservation = false;
+          return;
         }
 
-        else {
-          clienteData = {
-            nombre: userData.firstName,
-            apellido: userData.lastName,
-            correo: userData.email
-          }
-        }
+        clienteData = {
+          nombre: this.userData.nombre,
+          apellido: this.userData.apellido,
+          correo: this.userData.correo
+        };
+      }
+
+      // 3) Buscar o crear cliente en el backend de turnos
+      const clientes = await firstValueFrom(this.clienteService.getClienteByEmail(clienteData.correo));
+      let cliente: ICliente;
+
+      if (!clientes || clientes.length === 0) {
+        const { id, ...clienteSinId } = clienteData;
+        cliente = await firstValueFrom(this.clienteService.crearCliente(clienteSinId));
       } else {
-          // Para usuarios no autenticados, usar datos del formulario
-          clienteData = {
-            nombre: this.userData.nombre,
-            apellido: this.userData.apellido,
-            correo: this.userData.correo
-          };
-        }
+        cliente = clientes[0];
+      }
 
-        // Buscar cliente por correo
-        let clientes = await firstValueFrom(this.clienteService.getClienteByEmail(clienteData.correo));
-        let cliente: ICliente
+      if (clienteData.id) {
+        await lastValueFrom(this.clienteService.asignarUserId(cliente.id, clienteData.id));
+      }
 
-        if (!clientes || clientes.length == 0) {
-          // Cliente no existe, crear
-          const { id, ...clienteSinId } = clienteData
-          cliente = await firstValueFrom(this.clienteService.crearCliente(clienteSinId));
-        } else {
-          cliente = clientes[0]
-        }
-
-        if (clienteData.id) {
-          await lastValueFrom(this.clienteService.asignarUserId(cliente.id, clienteData.id));
-        }
-        this.crearTurnoConCliente(cliente.id, horario)
+      // 4) Crear turno
+      this.crearTurnoConCliente(cliente.id, horario);
 
     } catch (error) {
-      console.error('Error obteniendo horarios:', error);
-      alert('Error al obtener información del horario. Por favor intente nuevamente.');
+      console.error('Error obteniendo información para la reserva:', error);
+      alert('Ocurrió un error al preparar la reserva. Por favor intente nuevamente.');
+      this.isProcessingReservation = false;
     }
   }
 
@@ -483,17 +581,43 @@ export class TurnosComponent implements OnInit {
     const turnoData = {
       clienteId: clienteId,
       horarioId: horario.id,
-      fecha: this.selectedDate?.toISOString().split('T')[0]
+      fecha: this.selectedDate?.toISOString().split('T')[0],
+      captchaToken: this.captchaToken
     };
 
     this.turnoService.crearTurno(turnoData as any).subscribe({
-      next: (turno) => {
+      next: async (turno) => {
         this.reservationCode = String(turno.id);
         this.currentStep = 4;
+        
+        // Resetear el captcha después de usar el token
+        this.captchaToken = null;
+        this.isProcessingReservation = false;
+
+        // Refrescar disponibilidad del día seleccionado después de crear el turno
+        if (this.selectedDate && this.canchasDisponibles.length > 0) {
+          try {
+            await this.cargarHorarios(this.selectedDate, this.canchasDisponibles);
+          } catch (e) {
+            console.error('Error refrescando disponibilidad después de crear el turno:', e);
+          }
+        }
       },
       error: (error) => {
         console.error('Error creando turno:', error);
-        alert('Error al crear la reserva. Por favor intente nuevamente.');
+        
+        // Resetear el captcha y permitir nuevo intento
+        this.captchaToken = null;
+        this.isProcessingReservation = false;
+        this.resetTurnstileWidget();
+
+        if (error.status === 409) {
+          alert('El turno seleccionado ya fue reservado por otro usuario. Actualiza la página y elige otro horario.');
+        } else if (error.status === 500 && error.error?.message === 'Captcha inválido. No se puede crear el turno.') {
+          alert('Hubo un problema con el captcha. Por favor resuelve el captcha nuevamente y vuelve a intentarlo.');
+        } else {
+          alert('Error al crear la reserva. Por favor intente nuevamente.');
+        }
       }
     });
   }
