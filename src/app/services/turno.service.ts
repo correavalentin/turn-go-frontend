@@ -21,7 +21,8 @@ export class TurnoService {
   }
 
   crearTurno(turno: ITurnoWithoutId): Observable<ITurno> {
-    return this.http.post<ITurno>(this.baseUrl, turno);
+    return this.http.post<ITurno>(this.baseUrl, turno, {headers: {'emailNotification': 'Yes'}});
+    // TODO: Emailnotification deberia ser una opcion del cliente web. 
   }
 
   eliminarTurno(id: number): Observable<any> {
