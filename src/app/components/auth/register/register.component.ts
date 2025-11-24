@@ -35,9 +35,19 @@ export class RegisterComponent {
     this.router.navigate(['/turnos']);
   }
 
+  isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
   onSubmit(): void {
     if (!this.firstName || !this.lastName || !this.email || !this.password || !this.confirmPassword) {
       this.errorMessage = 'Please complete all fields';
+      return;
+    }
+
+    if (!this.isValidEmail(this.email)) {
+      this.errorMessage = 'Please enter a valid email address';
       return;
     }
 
