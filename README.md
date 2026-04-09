@@ -42,6 +42,7 @@ It includes authentication flows (email/password and Google OAuth), availability
 
 TurnGo Frontend is a single-page application focused on booking sports courts through a guided multi-step process.  
 The app supports both guest bookings and authenticated user bookings, and integrates with separate backend services for booking and user authentication.
+Backend Repository: https://github.com/andres-gomezf/turn-go
 
 ## Features
 
